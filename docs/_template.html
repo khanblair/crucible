@@ -33,6 +33,9 @@
 <p class="dim" id="generated"></p>
 <div class="tiles" id="tiles"></div>
 <div class="grid">
+  <div class="card wide" style="border-left:3px solid var(--blue)"><h2>In plain English</h2>
+    <p id="plaintext" style="font-size:1.02rem; margin-bottom:.8rem"></p>
+    <div class="tiles" id="plainmoney" style="margin-top:.4rem"></div></div>
   <div class="card"><h2>Active configuration</h2><div id="active"></div></div>
   <div class="card"><h2>Latest regime classification</h2><div id="regime"></div></div>
   <div class="card wide"><h2>EUR/USD — last 10 trading days (1h, Dukascopy)</h2>
@@ -92,6 +95,27 @@ if (!DATA) {
   ];
   $('tiles').innerHTML = tiles.map(([l, v, c]) =>
     `<div class="card tile"><div class="label">${l}</div><div class="value ${c}">${v}</div></div>`).join('');
+
+  const plain = DATA.plain;
+  if (plain) {
+    $('plaintext').textContent = plain.text;
+    const pm = plain.money;
+    if (pm) {
+      const money = (v, suffix) => {
+        const cls = v >= 0 ? 'ok' : 'bad';
+        const sign = v >= 0 ? '+' : '−';
+        return `<div class="card tile"><div class="label">${suffix}</div>
+          <div class="value ${cls}">${sign}$${Math.abs(v).toLocaleString()}</div></div>`;
+      };
+      $('plainmoney').innerHTML =
+        money(pm.net_usd, `Last ${pm.n} signals (${pm.span_days}d, practice)`) +
+        money(pm.per_day, 'Pace per day') +
+        money(pm.per_week, 'Pace per week') +
+        money(pm.per_year, 'Pace per year') +
+        `<div class="card tile"><div class="label">Position size assumed</div>
+          <div class="value">${plain.lot_size} lot</div></div>`;
+    }
+  }
 
   const a = DATA.active;
   $('active').innerHTML = `<div class="big">${a.regime}</div>

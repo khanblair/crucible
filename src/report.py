@@ -99,6 +99,89 @@ def _latest(pattern: str) -> dict | None:
     return json.loads(files[-1].read_text()) if files else None
 
 
+# ------------------------------------------------- plain-English reporting
+# Deterministic on purpose: money figures must come from arithmetic, never
+# from a language model. Estimates use the small starter position size in
+# config/settings.json -> reporting (0.1 lot = $1 per pip on EUR/USD).
+REGIME_PLAIN = {
+    "trending": "a trending market (prices moving steadily in one direction)",
+    "ranging": "a sideways market (prices bouncing inside a band)",
+    "high_volatility": "a very choppy market (big, fast swings)",
+    "low_volatility": "a quiet market (small, slow moves)",
+}
+
+
+def _usd(pips: float, settings: dict) -> float:
+    r = settings["reporting"]
+    return pips * r["pip_value_usd_per_standard_lot"] * r["lot_size"]
+
+
+def _made_or_lost(usd: float) -> str:
+    return f"made about ${usd:,.2f}" if usd >= 0 else f"lost about ${abs(usd):,.2f}"
+
+
+def _forward_money(settings: dict) -> dict | None:
+    """USD view of the paper-forward log: net result and its daily/weekly/
+    yearly pace over the calendar span the signals actually cover."""
+    path = ROOT / "results" / "forward_log" / "signals.jsonl"
+    if not path.exists():
+        return None
+    records = [json.loads(l) for l in path.read_text().splitlines() if l.strip()]
+    closed = [r for r in records
+              if r.get("kind") == "resolution" and r.get("outcome") == "closed"]
+    if not closed:
+        return None
+    dates = sorted(r["signal_time"][:10] for r in closed)
+    span = max((dt.date.fromisoformat(dates[-1]) - dt.date.fromisoformat(dates[0])).days, 1)
+    net = _usd(sum(r["pnl_pips"] for r in closed), settings)
+    per_day = net / span
+    return {"n": len(closed), "span_days": span, "net_usd": round(net, 2),
+            "per_day": round(per_day, 2), "per_week": round(per_day * 7, 2),
+            "per_year": round(per_day * 365)}
+
+
+def plain_summary(settings: dict, decision: dict | None = None) -> str:
+    """Non-technical summary anyone can read. No jargon, no invented numbers,
+    and no promises — practice results at the recent pace, clearly labeled."""
+    parts = []
+    if decision:
+        base = _usd(decision["baseline_oos"]["net_profit_pips"], settings)
+        cand = _usd(decision["candidate_oos"]["net_profit_pips"], settings)
+        days = settings["walk_forward"]["oos_days"]
+        if decision["accepted"]:
+            parts.append(
+                f"This week the system found better settings and switched to them. "
+                f"On the {days}-day test period, the old settings would have "
+                f"{_made_or_lost(base)} and the new ones {_made_or_lost(cand)} — "
+                f"an improvement of ${cand - base:,.2f}.")
+        else:
+            parts.append(
+                f"This week the system tried new settings but kept the old ones, "
+                f"because the new ones were not clearly better. On the {days}-day "
+                f"test period the old settings would have {_made_or_lost(base)} "
+                f"and the new ones {_made_or_lost(cand)}.")
+    m = _forward_money(settings)
+    if m:
+        pace = "earning" if m["per_day"] >= 0 else "losing"
+        parts.append(
+            f"In practice mode — no real money is traded — the last {m['n']} signals "
+            f"over roughly {m['span_days']} day(s) would have {_made_or_lost(m['net_usd'])} "
+            f"with a small starter position (0.1 lot). That pace means {pace} about "
+            f"${abs(m['per_day']):,.2f} a day, ${abs(m['per_week']):,.2f} a week, or "
+            f"${abs(m['per_year']):,.0f} a year — IF the market kept behaving the same "
+            f"way, which is never guaranteed.")
+    else:
+        parts.append("Not enough practice signals have been recorded yet to "
+                     "estimate results in dollars.")
+    regime_log = _latest("regime_*.json")
+    if regime_log:
+        label = regime_log["decision"]["regime"]
+        parts.append(f"Right now the market looks like {REGIME_PLAIN.get(label, label)}, "
+                     f"so the system is using its settings made for that condition.")
+    parts.append("These are simulated results, not financial advice.")
+    return " ".join(parts)
+
+
 def build_dashboard() -> None:
     """Rebuild docs/index.html — a single self-contained page — from results."""
     active = json.loads((ROOT / "config" / "active.json").read_text())
@@ -139,10 +222,15 @@ def build_dashboard() -> None:
                        "swapped": r["swapped"]}
                       for r in (json.loads(p.read_text())
                                 for p in sorted(RUNS.glob("regime_*.json")))]
+    from src.backtest import load_settings
+    settings = load_settings()
     data = {"generated": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
             "active": active, "regime": regime_log, "changes": changes,
             "divergence": divergence[-12:], "price": price, "forward": forward,
             "regime_history": regime_history[-30:],
+            "plain": {"text": plain_summary(settings, decision),
+                      "money": _forward_money(settings),
+                      "lot_size": settings["reporting"]["lot_size"]},
             "champion": (decision or {}).get("champion")}
     template = (ROOT / "docs" / "_template.html").read_text()
     page = template.replace("/*__DATA__*/null", json.dumps(data))
@@ -163,6 +251,8 @@ def daily_report() -> None:
               {"name": "Decay trigger", "value": str(decay["decay_trigger"]), "inline": True}]
     if regime_log.get("swapped"):
         fields.append({"name": "Regime swap", "value": "active.json switched (routing)", "inline": False})
+    fields.append({"name": "In plain English",
+                   "value": plain_summary(settings)[:1024], "inline": False})
     color = 0xC53030 if decay["decay_trigger"] else 0x2F855A
     discord_notify("Crucible · daily monitor", summary, fields, color)
     build_dashboard()
@@ -193,6 +283,9 @@ def optimization_report() -> None:
     if champ.get("warning_90d"):
         fields.append({"name": "⚠ Champion warning",
                        "value": "evolved system trails Champion Zero over 90 days", "inline": False})
+    from src.backtest import load_settings
+    fields.append({"name": "In plain English",
+                   "value": plain_summary(load_settings(), decision)[:1024], "inline": False})
     color = 0x2F855A if decision["accepted"] else 0x718096
     discord_notify("Crucible · optimization run", summary, fields, color)
     build_dashboard()

@@ -79,6 +79,10 @@
   "reconciliation": {
     "max_mean_abs_diff_pips": 0.5
   },
+  "reporting": {
+    "lot_size": 0.1,
+    "pip_value_usd_per_standard_lot": 10.0
+  },
   "phase0": {
     "min_profit_factor": 1.15,
     "max_single_year_profit_share": 0.5
