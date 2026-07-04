@@ -12,6 +12,7 @@
   h1 { font-size:1.6rem; } h1 span { color:var(--dim); font-weight:400; font-size:1rem; }
   h2 { font-size:1.05rem; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; margin-bottom:.6rem; }
   .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1rem; margin-top:1.5rem; }
+  .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; margin-top:1.5rem; }
   .card { background:var(--card); border:1px solid #2d333b; border-radius:8px; padding:1.1rem; }
   .wide { grid-column:1/-1; }
   table { width:100%; border-collapse:collapse; font-size:.88rem; }
@@ -20,40 +21,101 @@
   .ok { color:var(--green); } .bad { color:var(--red); } .warn { color:var(--amber); }
   .big { font-size:1.5rem; font-weight:600; }
   .dim { color:var(--dim); font-size:.85rem; }
-  svg { width:100%; height:220px; }
-  .legend { font-size:.8rem; color:var(--dim); }
+  .tile .label { color:var(--dim); font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; }
+  .tile .value { font-size:1.4rem; font-weight:600; margin-top:.2rem; }
+  svg { width:100%; height:230px; display:block; }
+  .legend { font-size:.8rem; color:var(--dim); margin-bottom:.3rem; }
   .legend b { font-weight:600; }
 </style>
 </head>
 <body>
 <h1>Crucible <span>· EUR/USD strategy perfection engine</span></h1>
 <p class="dim" id="generated"></p>
+<div class="tiles" id="tiles"></div>
 <div class="grid">
   <div class="card"><h2>Active configuration</h2><div id="active"></div></div>
   <div class="card"><h2>Latest regime classification</h2><div id="regime"></div></div>
+  <div class="card wide"><h2>EUR/USD — last 10 trading days (1h, Dukascopy)</h2>
+    <svg id="pricechart" viewBox="0 0 1000 230" preserveAspectRatio="none"></svg></div>
+  <div class="card wide"><h2>Paper-forward cumulative P&amp;L (net pips)</h2>
+    <svg id="fwdchart" viewBox="0 0 1000 230" preserveAspectRatio="none"></svg>
+    <div class="dim" id="fwdnote"></div></div>
   <div class="card wide"><h2>Champion Zero vs evolved system</h2>
     <div class="legend"><b style="color:var(--dim)">— Champion Zero</b> &nbsp;
     <b style="color:var(--blue)">— Evolved</b></div>
-    <svg id="equity" viewBox="0 0 1000 220" preserveAspectRatio="none"></svg>
+    <svg id="equity" viewBox="0 0 1000 230" preserveAspectRatio="none"></svg>
     <div id="champion"></div></div>
-  <div class="card wide"><h2>Parameter change log</h2><div id="changes"></div></div>
+  <div class="card"><h2>Regime history</h2><div id="regimehist"></div></div>
+  <div class="card"><h2>Parameter change log</h2><div id="changes"></div></div>
   <div class="card wide"><h2>Live-vs-backtest divergence</h2><div id="divergence"></div></div>
 </div>
 <script>
 const DATA = /*__DATA__*/null;
 const $ = id => document.getElementById(id);
+
+// polyline path with 20px vertical padding inside a 1000x230 viewBox
+function linePath(vals, color, w) {
+  if (!vals || vals.length < 2) return '';
+  const min = Math.min(...vals), max = Math.max(...vals), span = (max - min) || 1;
+  const y = v => (205 - (v - min) / span * 180).toFixed(1);
+  const d = vals.map((v, i) => `${i ? 'L' : 'M'}${(i / (vals.length - 1) * 1000).toFixed(1)},${y(v)}`).join('');
+  return `<path d="${d}" fill="none" stroke="${color}" stroke-width="${w || 1.5}"/>`;
+}
+// min/max/last labels + zero line where relevant
+function chrome(vals, fmt) {
+  if (!vals || vals.length < 2) return '';
+  const min = Math.min(...vals), max = Math.max(...vals), span = (max - min) || 1;
+  const y = v => (205 - (v - min) / span * 180);
+  let s = `<text x="6" y="${y(max)+4}" fill="#8b949e" font-size="12">${fmt(max)}</text>` +
+          `<text x="6" y="${y(min)+4}" fill="#8b949e" font-size="12">${fmt(min)}</text>` +
+          `<text x="994" y="${y(vals[vals.length-1])-6}" fill="#e6e8ea" font-size="12" text-anchor="end">${fmt(vals[vals.length-1])}</text>`;
+  if (min < 0 && max > 0)
+    s += `<line x1="0" x2="1000" y1="${y(0)}" y2="${y(0)}" stroke="#2d333b" stroke-dasharray="4 4"/>`;
+  return s;
+}
+
 if (!DATA) {
   document.body.innerHTML += '<p class="dim">No run data yet — the dashboard is rebuilt automatically after each run.</p>';
 } else {
   $('generated').textContent = 'Generated ' + DATA.generated;
+
+  const f = DATA.forward || {};
+  const price = DATA.price;
+  const last = price ? price.values[price.values.length - 1] : null;
+  const tiles = [
+    ['Active regime', (DATA.active || {}).regime || '—', ''],
+    ['EUR/USD last', last ? last.toFixed(5) : '—', ''],
+    ['Forward signals', f.n ?? 0, ''],
+    ['Forward net', (f.net ?? 0) + ' pips', (f.net ?? 0) >= 0 ? 'ok' : 'bad'],
+    ['Forward win rate', f.win_rate == null ? '—' : (f.win_rate * 100).toFixed(1) + '%',
+     f.win_rate == null ? '' : (f.win_rate >= 0.5 ? 'ok' : 'bad')],
+  ];
+  $('tiles').innerHTML = tiles.map(([l, v, c]) =>
+    `<div class="card tile"><div class="label">${l}</div><div class="value ${c}">${v}</div></div>`).join('');
+
   const a = DATA.active;
   $('active').innerHTML = `<div class="big">${a.regime}</div>
     <div class="dim">${a.params_file}</div>
     ${a.fallback_champion_zero ? '<div class="warn">stale set — Champion Zero fallback active</div>' : ''}
     <div class="dim">updated ${a.updated}</div>`;
+
   const r = DATA.regime && DATA.regime.decision;
   $('regime').innerHTML = r ? `<div class="big">${r.regime}</div>
-    <div class="dim">ADX ${r.adx} · ATR pctile ${r.atr_percentile} · rule ${r.rule}</div>` : '<span class="dim">no classification logged yet</span>';
+    <div class="dim">ADX ${r.adx} · ATR pctile ${r.atr_percentile} · rule ${r.rule}</div>`
+    : '<span class="dim">no classification logged yet</span>';
+
+  $('pricechart').innerHTML = price
+    ? linePath(price.values, '#58a6ff') + chrome(price.values, v => v.toFixed(4))
+    : '<text x="10" y="30" fill="#8b949e" font-size="13">no candle data committed yet</text>';
+
+  if (f.cum && f.cum.length > 1) {
+    const col = f.net >= 0 ? '#3fb950' : '#f85149';
+    $('fwdchart').innerHTML = linePath(f.cum, col) + chrome(f.cum, v => v.toFixed(0) + 'p');
+    $('fwdnote').textContent = `${f.n} closed hypothetical signals · net ${f.net} pips · no live orders exist anywhere`;
+  } else {
+    $('fwdchart').innerHTML = '<text x="10" y="30" fill="#8b949e" font-size="13">fewer than 2 closed forward signals so far</text>';
+  }
+
   const ch = DATA.champion;
   if (ch) {
     const lead = ch.evolved_leads;
@@ -61,22 +123,26 @@ if (!DATA) {
       ${ch.evolved.net_profit_pips} vs ${ch.champion_zero.net_profit_pips} pips net
       ${ch.warning_90d ? ' · <span class="warn">90-day warning</span>' : ''}
       ${ch.suspend_180d ? ' · <span class="bad">180-day suspension</span>' : ''}</p>`;
-    const draw = (pts, color) => {
-      if (!pts || pts.length < 2) return '';
-      const min = Math.min(...pts), max = Math.max(...pts), span = (max - min) || 1;
-      const d = pts.map((v, i) => `${i ? 'L' : 'M'}${(i / (pts.length - 1) * 1000).toFixed(1)},${(210 - (v - min) / span * 200).toFixed(1)}`).join('');
-      return `<path d="${d}" fill="none" stroke="${color}" stroke-width="1.5"/>`;
-    };
-    $('equity').innerHTML = draw(ch.champion_zero_equity, '#8b949e') + draw(ch.evolved_equity, '#58a6ff');
+    $('equity').innerHTML = linePath(ch.champion_zero_equity, '#8b949e') +
+                            linePath(ch.evolved_equity, '#58a6ff');
   } else {
     $('champion').innerHTML = '<span class="dim">no optimization run recorded yet</span>';
   }
+
+  const rh = DATA.regime_history || [];
+  $('regimehist').innerHTML = rh.length
+    ? '<table><tr><th>Date</th><th>Regime</th><th>Swap</th></tr>' +
+      rh.slice().reverse().map(x => `<tr><td>${x.date}</td><td>${x.regime}</td>
+        <td class="${x.swapped ? 'warn' : 'dim'}">${x.swapped ? 'swapped' : '—'}</td></tr>`).join('') + '</table>'
+    : '<span class="dim">no classifications yet</span>';
+
   $('changes').innerHTML = DATA.changes.length
     ? '<table><tr><th>Date</th><th>Regime</th><th>Outcome</th><th>Failed gates</th></tr>' +
       DATA.changes.map(c => `<tr><td>${c.date}</td><td>${c.regime}</td>
         <td class="${c.accepted ? 'ok' : 'dim'}">${c.accepted ? 'accepted' : 'rejected'}</td>
         <td>${c.failed.join(', ') || '—'}</td></tr>`).join('') + '</table>'
     : '<span class="dim">no parameter changes yet</span>';
+
   $('divergence').innerHTML = DATA.divergence.length
     ? '<table><tr><th>Date</th><th>Fwd expectancy</th><th>BT expectancy</th><th>Fwd WR</th><th>BT WR</th><th>Alert</th></tr>' +
       DATA.divergence.map(d => `<tr><td>${d.date}</td><td>${d.forward_expectancy}</td>

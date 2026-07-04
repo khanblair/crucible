@@ -114,9 +114,35 @@ def build_dashboard() -> None:
     div_path = ROOT / "results" / "forward_log" / "divergence.jsonl"
     if div_path.exists():
         divergence = [json.loads(l) for l in div_path.read_text().splitlines() if l.strip()]
+    price = None
+    try:
+        from src.data import load_candles
+        closes = load_candles()[1]["close"].iloc[-240:]  # ~10 trading days of 1h bars
+        price = {"labels": [str(t)[5:16] for t in closes.index],
+                 "values": [round(float(v), 5) for v in closes]}
+    except FileNotFoundError:
+        pass
+    forward = {"cum": [], "n": 0, "net": 0.0, "win_rate": None}
+    sig_path = ROOT / "results" / "forward_log" / "signals.jsonl"
+    if sig_path.exists():
+        records = [json.loads(l) for l in sig_path.read_text().splitlines() if l.strip()]
+        pnls = [r["pnl_pips"] for r in records
+                if r.get("kind") == "resolution" and r.get("outcome") == "closed"]
+        total, cum = 0.0, []
+        for p in pnls:
+            total += p
+            cum.append(round(total, 1))
+        forward = {"cum": cum, "n": len(pnls), "net": round(total, 1),
+                   "win_rate": round(sum(1 for p in pnls if p > 0) / len(pnls), 4)
+                   if pnls else None}
+    regime_history = [{"date": r["date"], "regime": r["decision"]["regime"],
+                       "swapped": r["swapped"]}
+                      for r in (json.loads(p.read_text())
+                                for p in sorted(RUNS.glob("regime_*.json")))]
     data = {"generated": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
             "active": active, "regime": regime_log, "changes": changes,
-            "divergence": divergence[-12:],
+            "divergence": divergence[-12:], "price": price, "forward": forward,
+            "regime_history": regime_history[-30:],
             "champion": (decision or {}).get("champion")}
     template = (ROOT / "docs" / "_template.html").read_text()
     page = template.replace("/*__DATA__*/null", json.dumps(data))
