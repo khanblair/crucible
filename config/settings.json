@@ -1,0 +1,86 @@
+{
+  "version": "1.0",
+  "instrument": "EURUSD",
+  "pip": 0.0001,
+  "costs": {
+    "spread_pips": 1.0,
+    "slippage_pips": 0.2,
+    "swap_long_pips_per_day": -0.6,
+    "swap_short_pips_per_day": 0.2,
+    "rollover_hour_utc": 21,
+    "triple_swap_weekday": 2
+  },
+  "strategy_fixed": {
+    "ema_fast": 8,
+    "ema_mid": 21,
+    "ema_slow": 50,
+    "h1_ema_mid": 50,
+    "h1_ema_slow": 200,
+    "rsi_period": 14,
+    "atr_period": 14,
+    "session_start_hour_utc": 7,
+    "session_end_hour_utc": 16,
+    "entry_valid_bars": 4,
+    "trail_lookback": 3
+  },
+  "gates": {
+    "min_relative_improvement": 0.10,
+    "min_oos_trades": 30,
+    "max_drawdown": 0.12,
+    "min_win_rate": 0.40,
+    "max_consistency_dropoff": 0.50
+  },
+  "regime": {
+    "adx_period": 14,
+    "adx_trend": 25,
+    "adx_neutral_low": 20,
+    "atr_high_percentile": 80,
+    "atr_low_percentile": 20,
+    "atr_window_days": 90,
+    "staleness_days": 90
+  },
+  "monitor": {
+    "drawdown_alert": 0.08,
+    "expectancy_window_trades": 20
+  },
+  "divergence": {
+    "forward_sample_trades": 30,
+    "expectancy_se_multiplier": 2.0,
+    "win_rate_max_delta": 0.10,
+    "consecutive_alerts_to_pause": 2
+  },
+  "champion": {
+    "warning_window_days": 90,
+    "suspension_window_days": 180
+  },
+  "cooldown_trading_days": 5,
+  "optuna": {
+    "n_trials": 200,
+    "timeout_minutes": 30
+  },
+  "walk_forward": {
+    "holdout_months": 6,
+    "embargo_days": 5,
+    "oos_days": 120
+  },
+  "search_space": {
+    "rsi_buy_low": [35, 55],
+    "rsi_buy_high": [55, 75],
+    "rsi_sell_low": [25, 45],
+    "rsi_sell_high": [45, 65],
+    "atr_stop_mult": [1.0, 3.0],
+    "atr_target_mult": [1.0, 3.0],
+    "max_body_atr": [0.3, 0.8],
+    "entry_buffer_pips": [0.0, 5.0]
+  },
+  "backtest": {
+    "start_equity_pips": 1000.0
+  },
+  "reconciliation": {
+    "max_mean_abs_diff_pips": 0.5
+  },
+  "phase0": {
+    "min_profit_factor": 1.15,
+    "max_single_year_profit_share": 0.5
+  }
+}

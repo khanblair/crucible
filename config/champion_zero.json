@@ -1,0 +1,16 @@
+{
+  "name": "champion_zero",
+  "frozen": true,
+  "created": "2026-07-04",
+  "note": "Phase 0 hand-set parameters. This file is NEVER modified by anyone or anything.",
+  "params": {
+    "rsi_buy_low": 45.0,
+    "rsi_buy_high": 65.0,
+    "rsi_sell_low": 35.0,
+    "rsi_sell_high": 55.0,
+    "atr_stop_mult": 1.5,
+    "atr_target_mult": 1.5,
+    "max_body_atr": 0.5,
+    "entry_buffer_pips": 2.0
+  }
+}

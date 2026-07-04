@@ -1,0 +1,65 @@
+name: optimize
+
+on:
+  schedule:
+    - cron: "0 22 * * 0"      # Sundays after the weekly close
+  workflow_dispatch:           # decay triggers schedule a manual dispatch
+
+permissions:
+  contents: write
+
+concurrency:
+  group: crucible-runs
+  cancel-in-progress: false
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60       # hard ceiling: Discord alert fires if we die here
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Refresh decision data (Dukascopy)
+        run: python -m src.data --refresh
+
+      - name: Optuna search on the training window
+        run: python -m src.optimize
+
+      - name: Evaluator gate (out-of-sample, all conditions)
+        run: python -m src.evaluate
+
+      - name: Reporting (DeepSeek prose, Discord, dashboard)
+        env:
+          DEEPSEEK_KEY: ${{ secrets.DEEPSEEK_KEY }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: python -m src.report --optimization
+
+      - name: Commit (regime file + active.json atomically, plus results)
+        run: |
+          git config user.name "crucible-bot"
+          git config user.email "crucible-bot@users.noreply.github.com"
+          git add config/regimes config/active.json data/candles results docs
+          git diff --cached --quiet || git commit -m "optimize: weekly run $(date -u +%F)"
+          git push
+
+      - name: Alert on abnormal termination
+        if: failure()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          python - <<'PY'
+          import os, requests
+          hook = os.environ.get("DISCORD_WEBHOOK")
+          if hook:
+              requests.post(hook, json={"embeds": [{
+                  "title": "Crucible · optimization run FAILED",
+                  "description": "The run did not complete normally (error or 60-minute ceiling). Existing parameters remain active.",
+                  "color": 0xF85149}]}, timeout=30)
+          PY

@@ -1,0 +1,51 @@
+name: monitor
+
+on:
+  schedule:
+    - cron: "30 21 * * 1-5"   # weekdays after NY close
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: crucible-runs        # never overlap with the optimization run
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10       # hard ceiling: lightweight run
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Daily monitoring run
+        env:
+          TWELVE_DATA_KEY: ${{ secrets.TWELVE_DATA_KEY }}
+          DEEPSEEK_KEY: ${{ secrets.DEEPSEEK_KEY }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          python -m src.data --refresh
+          python -m src.data --context
+          python -m src.regime --apply
+          python -m src.forward --log
+          if [ "$(date -u +%d)" -le 7 ] && [ "$(date -u +%u)" = "1" ]; then
+            python -m src.forward --divergence
+            python -m src.data --reconcile
+          fi
+          python -m src.report --daily
+
+      - name: Commit results (allowed paths only)
+        run: |
+          git config user.name "crucible-bot"
+          git config user.email "crucible-bot@users.noreply.github.com"
+          git add data/candles results docs config/active.json
+          git diff --cached --quiet || git commit -m "monitor: daily run $(date -u +%F)"
+          git push

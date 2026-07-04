@@ -1,0 +1,15 @@
+{
+  "name": "high_volatility",
+  "last_validated": "2026-07-04",
+  "validated_by": "phase0-seed",
+  "params": {
+    "rsi_buy_low": 45.0,
+    "rsi_buy_high": 65.0,
+    "rsi_sell_low": 35.0,
+    "rsi_sell_high": 55.0,
+    "atr_stop_mult": 1.5,
+    "atr_target_mult": 1.5,
+    "max_body_atr": 0.5,
+    "entry_buffer_pips": 2.0
+  }
+}

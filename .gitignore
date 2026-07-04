@@ -1,0 +1,15 @@
+# raw Dukascopy tick downloads never enter the repository
+ticks/
+*.bi5
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# local environment & secrets
+.env
+
+# os
+.DS_Store
