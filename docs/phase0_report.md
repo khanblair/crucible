@@ -1,23 +1,16 @@
 # Phase 0 Report — Base Strategy Proof
 
-**Status: PENDING**
+**Verdict: FAIL**
 
-Nothing in Crucible goes live until this phase is complete. An optimizer
-pointed at a strategy with no edge does not create an edge.
+- Expectancy per trade (net): -3.1329 pips
+- Profit factor: 0.5437
+- Maximum drawdown: 232.08%
+- Total trades: 753
+- Largest single-year profit share: 100.00%
 
-To produce this report:
+## Trades by year
 
-```bash
-python -m src.data --refresh          # pull ~3 years of Dukascopy EUR/USD data
-python -m src.backtest --phase0       # full multi-year backtest of champion_zero
-```
-
-The command overwrites this file with the actual results. Pass criteria:
-
-- Positive expectancy per trade after all costs across the full period
-- Profit factor above 1.15
-- No single year contributing more than half of total profit
-
-If the base strategy fails, fix the strategy logic — do not hand it to the
-optimizer. The automated workflows must remain disabled until this report
-shows **PASS**.
+- 2023: 127 trades, -182.1 pips net
+- 2024: 243 trades, -743.2 pips net
+- 2025: 234 trades, -970.8 pips net
+- 2026: 149 trades, -463.1 pips net
