@@ -1,0 +1,35 @@
+name: ci
+
+on:
+  pull_request:               # every human change to core files is gated here
+  push:
+    branches: [main]
+    paths:                    # skip bot data/result commits; test code changes
+      - "src/**"
+      - "tests/**"
+      - "config/settings.json"
+      - "requirements.txt"
+      - ".github/workflows/**"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Test suite (evaluator gates + backtest harness)
+        run: pytest -v
+
+      - name: Compile all modules
+        run: python -m compileall -q src tests
