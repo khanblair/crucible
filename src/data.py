@@ -12,6 +12,7 @@ import lzma
 import os
 import pathlib
 import struct
+import time
 
 import pandas as pd
 import requests
@@ -22,10 +23,23 @@ POINT = 1e-5  # Dukascopy prices are integer points
 DUKA_URL = "https://datafeed.dukascopy.com/datafeed/EURUSD/{y}/{m:02d}/{d:02d}/BID_candles_min_1.bi5"
 
 
-def _fetch_day_minutes(day: dt.date) -> pd.DataFrame:
-    """One day of Dukascopy 1-minute bid candles. Empty frame on holidays."""
+_session = requests.Session()
+_session.headers["User-Agent"] = "Mozilla/5.0 (crucible data layer)"
+
+
+def _fetch_day_minutes(day: dt.date, retries: int = 3) -> pd.DataFrame | None:
+    """One day of Dukascopy 1-minute bid candles. Empty frame on holidays,
+    None when the feed stays unreachable after retries — the caller skips the
+    day and reports it rather than losing the whole refresh to one bad request."""
     url = DUKA_URL.format(y=day.year, m=day.month - 1, d=day.day)  # month is 0-based
-    r = requests.get(url, timeout=30)
+    for attempt in range(retries):
+        try:
+            r = _session.get(url, timeout=20)
+            break
+        except requests.RequestException:
+            if attempt == retries - 1:
+                return None
+            time.sleep(2 ** attempt)
     if r.status_code != 200 or not r.content:
         return pd.DataFrame()
     raw = lzma.decompress(r.content)
@@ -61,11 +75,24 @@ def refresh(years_back: int = 3) -> None:
     else:
         start = dt.date.today() - dt.timedelta(days=365 * years_back)
     end = dt.date.today() - dt.timedelta(days=1)
-    frames, day = [], start
+    frames, failed, day, done = [], [], start, 0
+    total = ((end - start).days * 5) // 7 + 1
     while day <= end:
         if day.weekday() < 5:  # FX week; sparse Sunday bars come with Monday files
-            frames.append(_fetch_day_minutes(day))
+            df = _fetch_day_minutes(day)
+            if df is None:
+                failed.append(day.isoformat())
+            else:
+                frames.append(df)
+            done += 1
+            if done % 100 == 0:
+                print(f"  {done}/{total} days fetched ({len(failed)} failed)", flush=True)
         day += dt.timedelta(days=1)
+    if failed:
+        print(f"WARNING: {len(failed)} day(s) unreachable after retries: "
+              f"{', '.join(failed[:10])}{'…' if len(failed) > 10 else ''}")
+    if len(failed) > max(total // 10, 3):
+        raise RuntimeError("too many failed days — feed unhealthy, aborting refresh")
     fresh = pd.concat([f for f in frames if not f.empty]) if frames else pd.DataFrame()
     if fresh.empty:
         print("no new Dukascopy data")
