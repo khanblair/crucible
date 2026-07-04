@@ -1,6 +1,6 @@
 {
-  "regime": "ranging",
-  "params_file": "config/regimes/ranging.json",
+  "regime": "low_volatility",
+  "params_file": "config/regimes/low_volatility.json",
   "fallback_champion_zero": false,
   "updated": "2026-07-04"
 }

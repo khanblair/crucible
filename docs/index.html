@@ -40,7 +40,7 @@
   <div class="card wide"><h2>Live-vs-backtest divergence</h2><div id="divergence"></div></div>
 </div>
 <script>
-const DATA = {"generated": "2026-07-04T14:43:32+00:00", "active": {"regime": "ranging", "params_file": "config/regimes/ranging.json", "fallback_champion_zero": false, "updated": "2026-07-04"}, "regime": null, "changes": [], "divergence": [], "champion": null};
+const DATA = {"generated": "2026-07-04T15:10:15+00:00", "active": {"regime": "low_volatility", "params_file": "config/regimes/low_volatility.json", "fallback_champion_zero": false, "updated": "2026-07-04"}, "regime": {"date": "2026-07-04", "type": "regime", "decision": {"regime": "low_volatility", "rule": "3: low volatility in the absence of trend", "adx": 22.54, "atr": 0.000688, "atr_percentile": 0.4}, "stale": false, "swapped": true}, "changes": [], "divergence": [], "champion": null};
 const $ = id => document.getElementById(id);
 if (!DATA) {
   document.body.innerHTML += '<p class="dim">No run data yet — the dashboard is rebuilt automatically after each run.</p>';
