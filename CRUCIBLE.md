@@ -3,7 +3,7 @@
 
 **Target Market:** EUR/USD (15-Minute and 1-Hour charts)
 **Built By:** Blair Khan
-**Version:** 1.0 — July 2026
+**Version:** 1.1 — July 2026
 **Stack:** GitHub Actions · Optuna · DeepSeek · Discord · GitHub Pages · Twelve Data API · Dukascopy
 
 ---
@@ -101,7 +101,7 @@ Real price data is not the same as realistic execution. A backtest that ignores 
 
 Crucible is organized into four layers that sit on top of each other. Each layer does a specific job.
 
-**Layer 1 — Instructions Layer:** This is where the AI model receives its instructions. DeepSeek is given a clear system prompt that defines its single role — report writing — the format its output must take, and what it is not allowed to do. It has no other role in the system.
+**Layer 1 — Instructions Layer:** This is where the AI model receives its instructions. DeepSeek is given a descriptive system prompt that explains what Crucible is, defines its single role — report writing — and then removes every source of ambiguity: a field-by-field glossary of the metrics payload it will receive (what out-of-sample-versus-baseline means, how the gates decide, what the champion standing signifies, that rejection is a healthy outcome), the audience and length of the output, and hard rules against inventing numbers, predicting markets, or suggesting changes to the system. A model cannot misread context it has been explicitly given. It has no other role in the system.
 
 **Layer 2 — Context Layer:** This layer controls what information each component sees during a run. It packages together the current strategy parameters, the recent results of the strategy's signals evaluated against live market data (no live trades are placed — these are hypothetical signals from the paper-forward log), and the current market volatility statistics. Garbage in, garbage out.
 
@@ -267,11 +267,15 @@ Several hard limits are built into the system to prevent runaway behavior.
 
 **Explicit comparison in Discord reports:** The Discord notification never just says "optimization complete." It always shows the specific before-and-after values and the exact delta in net-of-cost performance metrics. This forces the human engineer to remain aware of what is changing and why, rather than blindly accepting automated outputs.
 
+**CI gate on human changes:** Every pull request — the only path by which the strategy logic, the Evaluator, or the workflows can change — must pass the full test suite and module compilation before merging. The automated loop is reviewed by the Evaluator; the humans are reviewed by CI.
+
 ---
 
 ## The Role of DeepSeek
 
 DeepSeek's role is deliberately narrow: it writes the reports. After the numerical evaluation is complete, it reads the raw metrics and produces the human-readable summary for the Discord notification — the specific values that changed, the performance deltas, the reason for acceptance or rejection, and any anomalies. Turning a table of numbers into a clear, concise explanation is where a language model genuinely earns its place.
+
+Because a report is only as good as the context behind it, the prompt and payload are deliberately rich. The system prompt describes the whole system, defines every field the model will receive — net-of-cost figures, the same-data candidate-versus-baseline comparison, each gate's pass/fail detail, the champion-vs-challenger standing, regime routing state, decay alerts — and pins the output to 80–150 words of plain text that leads with the outcome and names any failed gates. The payload itself carries the run date, both parameter sets, both out-of-sample results, and the champion standing, so the summary is grounded in the actual decision rather than a fragment of it. The model may only use numbers present in the payload; if the DeepSeek API is unavailable, a deterministic fallback summary is generated from the same payload so reporting never silently stops.
 
 DeepSeek does not optimize parameters, does not classify market regimes, does not touch any decision in the accept/reject path, and cannot write to any configuration file. Everything that affects a decision is handled by deterministic code, so every decision the system makes can be reproduced bit-for-bit. The `DEEPSEEK_KEY` secret grants it exactly one capability: prose.
 
@@ -283,7 +287,9 @@ The Crucible repository is organized into clear sections, each with a specific p
 
 The `src` folder contains one Python module per stage: data fetching, strategy logic, backtesting, regime classification, optimization, evaluation, forward logging, and reporting. The `config` folder contains `champion_zero.json` (frozen, never modified), the `regimes/` subfolder with the four regime parameter files the bot is allowed to modify, and `active.json`, the pointer recording which regime set is currently selected. The `data` folder holds the Dukascopy candle files and the committed intrabar-ordering table — raw ticks are never stored. The `results` folder stores the performance logs and the `forward_log/` of daily paper signals. The `docs` folder is the GitHub Pages source, including the Phase 0 report, rebuilt automatically after each run. The `tests` folder covers the two components whose silent failure would corrupt everything: the Evaluator gates and the backtest harness.
 
-The strategy logic file and the evaluation gatekeeper file are both committed and version-controlled but are never modified by the automated workflow. Any changes to these files must be made by a human engineer through a normal pull request. The Python version is pinned explicitly so runner defaults can never shift underneath the system.
+The strategy logic file and the evaluation gatekeeper file are both committed and version-controlled but are never modified by the automated workflow. Any changes to these files must be made by a human engineer through a normal pull request — and every pull request is gated by a CI workflow that runs the full test suite (every Evaluator gate, the backtest cost model) and compiles every module before the change can merge. The same CI runs on any code push to main, while skipping the bot's routine data and result commits so it costs no Actions minutes on appends. The Python version is pinned explicitly so runner defaults can never shift underneath the system.
+
+The division of labor for review is explicit. Automated parameter changes do not go through pull requests: their reviewer is the Evaluator itself — deterministic, tested, and stricter than a human eyeballing JSON diffs — with the Discord report keeping the engineer aware and `git revert` as the undo. Human code changes get the opposite treatment: no code reaches main without passing CI.
 
 Three secrets are stored in GitHub Actions and never appear in any file: `TWELVE_DATA_KEY` for context candle fetching, `DEEPSEEK_KEY` for report writing, and `DISCORD_WEBHOOK` for notifications. Rotating any of these requires only updating the secret value in the repository settings — no code changes needed.
 
