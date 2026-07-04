@@ -29,7 +29,7 @@ jobs:
       - run: pip install -r requirements.txt
 
       - name: Test suite (evaluator gates + backtest harness)
-        run: pytest -v
+        run: python -m pytest -v   # -m puts the repo root on sys.path for `src` imports
 
       - name: Compile all modules
         run: python -m compileall -q src tests
