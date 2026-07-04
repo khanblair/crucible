@@ -103,6 +103,11 @@ def refresh(years_back: int = 3) -> None:
             old = pd.read_csv(path, index_col=0, parse_dates=True)
             new = pd.concat([old, new])
             new = new[~new.index.duplicated(keep="last")].sort_index()
+        # canonical precision so a rewrite of unchanged history is byte-identical:
+        # 5 decimals is full EUR/USD point resolution, and stable floats keep the
+        # daily commit to appended rows instead of an 88k-line churn
+        new[["open", "high", "low", "close"]] = new[["open", "high", "low", "close"]].round(5)
+        new["volume"] = new["volume"].round(2)
         new.to_csv(path)
     print(f"candles refreshed through {end.isoformat()}")
 
