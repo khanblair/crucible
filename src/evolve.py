@@ -101,16 +101,14 @@ def genome_id_for(genome: dict) -> str:
 
 def run_evolution() -> dict:
     """Full trigger-check-then-funnel flow. Returns the evolution record
-    written to results/runs/evolution_<date>.json (or a not-attempted stub)."""
-    if not phase0_passed():
-        return {"attempted": False,
-               "reason": "Phase 0 has not passed — genome evolution must not run "
-                        "against a strategy with no proven edge"}
+    written to results/runs/evolution_<date>.json (or a not-attempted stub).
+    Phase 0 no longer gates this — it's informational (see docs/phase0_report.md);
+    every candidate still has to clear the stricter structural gate below."""
     settings = load_settings()
     validate_active()
     trigger = losing_streak_and_stuck(settings)
     if not trigger["triggered"]:
-        return {"attempted": False, "trigger": trigger}
+        return {"attempted": False, "trigger": trigger, "phase0_passed": phase0_passed()}
     if not evolution_cooldown_clear(settings):
         return {"attempted": False, "trigger": trigger, "reason": "cooldown active"}
 
@@ -298,9 +296,8 @@ def watch_prs() -> None:
 
 def _check_trigger() -> bool:
     """Prints exactly 'true' or 'false' — used by optimize.yml to decide
-    whether to dispatch evolve.yml, without embedding Python in YAML."""
-    if not phase0_passed():
-        return False
+    whether to dispatch evolve.yml, without embedding Python in YAML. Runs
+    daily now that optimize.yml itself runs daily (see settings.evolution)."""
     settings = load_settings()
     trigger = losing_streak_and_stuck(settings)
     return trigger["triggered"] and evolution_cooldown_clear(settings)

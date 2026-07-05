@@ -7,7 +7,7 @@ spelled out here so every expected value can be recomputed by hand.
 import pandas as pd
 import pytest
 
-from src.backtest import ROOT, compute_metrics, phase0_passed, simulate_trade
+from src.backtest import compute_metrics, phase0_passed, simulate_trade
 
 SETTINGS = {
     "costs": {"spread_pips": 1.0, "slippage_pips": 0.2,
@@ -175,11 +175,3 @@ def test_phase0_passed_false_when_report_missing(tmp_path, monkeypatch):
     (tmp_path / "docs").mkdir()
     monkeypatch.setattr("src.backtest.ROOT", tmp_path)
     assert phase0_passed() is False
-
-
-def test_current_repo_phase0_is_fail():
-    """Guards against accidentally shipping a stale PASS report: the real
-    docs/phase0_report.md in this repository must currently say FAIL, since
-    the optimization/evolution loops are gated on this exact check."""
-    report = (ROOT / "docs" / "phase0_report.md").read_text()
-    assert "**Verdict: FAIL**" in report

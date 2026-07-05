@@ -2,7 +2,7 @@ name: optimize
 
 on:
   schedule:
-    - cron: "0 22 * * 0"      # Sundays after the weekly close
+    - cron: "0 22 * * 1-5"    # daily, weekdays, 30 min after monitor's daily update
   workflow_dispatch:           # decay triggers schedule a manual dispatch
 
 permissions:
@@ -47,7 +47,7 @@ jobs:
           git config user.name "crucible-bot"
           git config user.email "crucible-bot@users.noreply.github.com"
           git add config/regimes config/active.json data/candles results docs
-          git diff --cached --quiet || git commit -m "optimize: weekly run $(date -u +%F)"
+          git diff --cached --quiet || git commit -m "optimize: daily run $(date -u +%F)"
           git push
 
       - name: Check genome-evolution trigger

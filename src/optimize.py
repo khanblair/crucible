@@ -82,9 +82,10 @@ def search(df15: pd.DataFrame, df1h: pd.DataFrame, settings: dict,
 
 def _main() -> None:
     if not phase0_passed():
-        print("Phase 0 has not passed (see docs/phase0_report.md) — the optimization "
-             "loop must not run against a strategy with no proven edge. Exiting cleanly.")
-        return
+        print("Note: Phase 0 has not passed (see docs/phase0_report.md) — the base "
+             "strategy has not yet proven an edge in its unoptimized form. This run "
+             "proceeds anyway; every candidate still has to clear the Evaluator's "
+             "out-of-sample gates below to be accepted.")
     settings = load_settings()
     active = validate_active()  # every run begins by validating the pointer
     from src.data import load_candles

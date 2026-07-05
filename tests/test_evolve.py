@@ -213,20 +213,32 @@ def test_genome_id_for_mints_new_id_for_unseen_combination():
     assert gid == "breakout__fixed_r_multiple"
 
 
-# --------------------------------------------------------------- phase0 gate
-def test_check_trigger_false_when_phase0_not_passed(monkeypatch):
-    monkeypatch.setattr("src.evolve.phase0_passed", lambda: False)
-    assert _check_trigger() is False
-
-
-def test_run_evolution_no_ops_when_phase0_not_passed(monkeypatch, clean_runs):
-    """Even if a losing streak + stuck optimizer would otherwise trigger it,
-    genome evolution must refuse to run until Phase 0 has passed."""
-    monkeypatch.setattr("src.evolve.phase0_passed", lambda: False)
+# -------------------------------------------------- phase0 is informational
+def test_check_trigger_ignores_phase0_status(monkeypatch, clean_runs):
+    """Phase 0 no longer gates evolution — only the losing-streak+stuck
+    trigger and the cooldown do. A losing streak must fire the trigger
+    regardless of whether phase0_passed() is True or False."""
     settings = load_settings()
     n = settings["evolution"]["losing_streak_runs"]
     for i in range(n):
-        clean_runs.append(_write_decision(f"2099-09-{10 + i:02d}", -10.0 - i, -9.0))
+        clean_runs.append(_write_decision(f"2099-10-{10 + i:02d}", -10.0 - i, -9.0 - i * 0.001))
+    monkeypatch.setattr("src.evolve.phase0_passed", lambda: False)
+    fires_when_failed = _check_trigger()
+    monkeypatch.setattr("src.evolve.phase0_passed", lambda: True)
+    fires_when_passed = _check_trigger()
+    assert fires_when_failed == fires_when_passed is True
+
+
+def test_run_evolution_reports_phase0_status_without_gating_on_it(monkeypatch):
+    """When the trigger hasn't fired, run_evolution() takes the cheap
+    not-triggered path (never touches real data) and its stub still surfaces
+    phase0_passed() for visibility — but never as a blocking 'reason'. The
+    trigger check itself is mocked so this can't accidentally read real repo
+    state and fall through into a real (expensive) funnel run."""
+    monkeypatch.setattr("src.evolve.phase0_passed", lambda: False)
+    monkeypatch.setattr("src.evolve.losing_streak_and_stuck",
+                        lambda settings: {"triggered": False, "reason": "not enough history"})
     result = run_evolution()
     assert result["attempted"] is False
-    assert "Phase 0" in result["reason"]
+    assert result["phase0_passed"] is False
+    assert "Phase 0" not in result.get("reason", "")

@@ -24,8 +24,9 @@ prose: turn the raw metrics JSON you receive into a summary a human engineer
 reads in Discord.
 
 How to read the payload you receive:
-- "kind": "optimization" (weekly run: a candidate was gated) or "daily"
-  (weekday monitoring run: no optimization happened).
+- "kind": "optimization" (a candidate was searched for and gated — runs daily
+  now) or "daily" (the lightweight weekday monitoring run: no optimization
+  happened, just regime/decay checks and paper-forward logging).
 - All profit figures are NET of execution costs (spread, slippage, swap),
   measured in pips. "candidate_oos" / "baseline_oos" are out-of-sample results
   for the new candidate vs the currently active parameters ON THE SAME DATA —
@@ -122,7 +123,8 @@ def _made_or_lost(usd: float) -> str:
 
 def _forward_money(settings: dict) -> dict | None:
     """USD view of the paper-forward log: net result and its daily/weekly/
-    yearly pace over the calendar span the signals actually cover."""
+    yearly pace over the calendar span the signals actually cover, plus how
+    that pace compares against the configured daily target."""
     path = ROOT / "results" / "forward_log" / "signals.jsonl"
     if not path.exists():
         return None
@@ -135,9 +137,11 @@ def _forward_money(settings: dict) -> dict | None:
     span = max((dt.date.fromisoformat(dates[-1]) - dt.date.fromisoformat(dates[0])).days, 1)
     net = _usd(sum(r["pnl_pips"] for r in closed), settings)
     per_day = net / span
+    target = settings["reporting"]["daily_target_usd"]
     return {"n": len(closed), "span_days": span, "net_usd": round(net, 2),
             "per_day": round(per_day, 2), "per_week": round(per_day * 7, 2),
-            "per_year": round(per_day * 365)}
+            "per_year": round(per_day * 365), "target_usd": target,
+            "target_gap": round(per_day - target, 2), "meets_target": per_day >= target}
 
 
 def plain_summary(settings: dict, decision: dict | None = None) -> str:
@@ -150,18 +154,23 @@ def plain_summary(settings: dict, decision: dict | None = None) -> str:
         days = settings["walk_forward"]["oos_days"]
         if decision["accepted"]:
             parts.append(
-                f"This week the system found better settings and switched to them. "
+                f"Today the system found better settings and switched to them. "
                 f"On the {days}-day test period, the old settings would have "
                 f"{_made_or_lost(base)} and the new ones {_made_or_lost(cand)} — "
                 f"an improvement of ${cand - base:,.2f}.")
         else:
             parts.append(
-                f"This week the system tried new settings but kept the old ones, "
+                f"Today the system tried new settings but kept the old ones, "
                 f"because the new ones were not clearly better. On the {days}-day "
                 f"test period the old settings would have {_made_or_lost(base)} "
                 f"and the new ones {_made_or_lost(cand)}.")
     m = _forward_money(settings)
     if m:
+        gap = abs(m["target_gap"])
+        target_line = (f"That clears the ${m['target_usd']:,.2f}/day target by ${gap:,.2f}."
+                      if m["meets_target"] else
+                      f"That's ${gap:,.2f}/day short of the ${m['target_usd']:,.2f}/day target — "
+                      f"still being refined toward it.")
         pace = "earning" if m["per_day"] >= 0 else "losing"
         parts.append(
             f"In practice mode — no real money is traded — the last {m['n']} signals "
@@ -169,7 +178,7 @@ def plain_summary(settings: dict, decision: dict | None = None) -> str:
             f"with a small starter position (0.1 lot). That pace means {pace} about "
             f"${abs(m['per_day']):,.2f} a day, ${abs(m['per_week']):,.2f} a week, or "
             f"${abs(m['per_year']):,.0f} a year — IF the market kept behaving the same "
-            f"way, which is never guaranteed.")
+            f"way, which is never guaranteed. {target_line}")
     else:
         parts.append("Not enough practice signals have been recorded yet to "
                      "estimate results in dollars.")
@@ -344,7 +353,7 @@ def optimization_report() -> None:
          "value": f"evolved {'leads' if champ['evolved_leads'] else 'TRAILS'} "
                   f"({champ['evolved']['net_profit_pips']} vs "
                   f"{champ['champion_zero']['net_profit_pips']} pips)", "inline": False},
-        {"name": "Next run", "value": "Sunday 22:00 UTC (weekly cadence)", "inline": True},
+        {"name": "Next run", "value": "Tomorrow 22:00 UTC (weekdays, daily cadence)", "inline": True},
     ]
     if champ.get("warning_90d"):
         fields.append({"name": "⚠ Champion warning",

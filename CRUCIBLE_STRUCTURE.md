@@ -1,6 +1,6 @@
 # Crucible — Repository Structure
 
-**Version:** 1.3 · **Principle:** one file per responsibility, nothing duplicated, nothing decorative.
+**Version:** 1.4 · **Principle:** one file per responsibility, nothing duplicated, nothing decorative.
 
 ---
 
@@ -11,8 +11,8 @@ crucible/
 ├── .github/
 │   └── workflows/
 │       ├── monitor.yml            # Daily monitoring run (weekdays, ≤10 min)
-│       ├── optimize.yml           # Weekly optimization run (Sundays + decay triggers, ≤60 min);
-│       │                          #   also runs the genome-evolution trigger check
+│       ├── optimize.yml           # Daily optimization run (weekdays + decay triggers, ≤60 min);
+│       │                          #   also runs the genome-evolution trigger check daily
 │       ├── ci.yml                 # Test suite + compile on every PR and code push to main
 │       │                          #   (bot data/result commits are skipped)
 │       ├── evolve.yml             # Genome evolution: screen → refine → gate → open PR

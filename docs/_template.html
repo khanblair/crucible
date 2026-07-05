@@ -89,17 +89,24 @@ if (!DATA) {
     $('plaintext').textContent = plain.text;
     const pm = plain.money;
     if (pm) {
-      const money = (v, suffix) => {
-        const cls = v >= 0 ? 'ok' : 'bad';
+      const money = (v, suffix, cls) => {
+        cls = cls || (v >= 0 ? 'ok' : 'bad');
         const sign = v >= 0 ? '+' : '−';
         return `<div class="card tile"><div class="label">${suffix}</div>
           <div class="value ${cls}">${sign}$${Math.abs(v).toLocaleString()}</div></div>`;
       };
+      const dayCls = pm.meets_target ? 'ok' : (pm.per_day >= 0 ? 'warn' : 'bad');
+      const targetNote = pm.meets_target
+        ? `cleared by $${Math.abs(pm.target_gap).toFixed(2)}`
+        : `$${Math.abs(pm.target_gap).toFixed(2)} short`;
       $('plainmoney').innerHTML =
         money(pm.net_usd, `Last ${pm.n} signals (${pm.span_days}d, practice)`) +
-        money(pm.per_day, 'Pace per day') +
+        money(pm.per_day, 'Pace per day', dayCls) +
         money(pm.per_week, 'Pace per week') +
         money(pm.per_year, 'Pace per year') +
+        `<div class="card tile"><div class="label">Daily target</div>
+          <div class="value">$${pm.target_usd.toFixed(2)}</div>
+          <div class="dim" style="margin-top:.2rem">${targetNote}</div></div>` +
         `<div class="card tile"><div class="label">Position size assumed</div>
           <div class="value">${plain.lot_size} lot</div></div>`;
     }

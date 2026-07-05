@@ -81,7 +81,8 @@
   },
   "reporting": {
     "lot_size": 0.1,
-    "pip_value_usd_per_standard_lot": 10.0
+    "pip_value_usd_per_standard_lot": 10.0,
+    "daily_target_usd": 3.0
   },
   "phase0": {
     "min_profit_factor": 1.15,
