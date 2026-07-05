@@ -73,11 +73,15 @@ def simulate_trade(df15: pd.DataFrame, signal_idx: int, sig: dict, settings: dic
     gross = sum(d * (px - entry) / PIP * frac for px, frac, _, _ in legs)
     slip = costs["slippage_pips"] * (1.0 + sum(frac for _, frac, is_stop, _ in legs if is_stop))
     net = gross - costs["spread_pips"] - slip + swap_pips
-    return {"time": str(sig["time"]), "direction": d, "entry": entry,
+    # Cast to native Python types here, at the harness boundary: entry/gross/etc.
+    # trace back through pandas .iloc[] scalars (numpy.float64), and a numpy-tainted
+    # value surviving into a JSON-serialized decision/trade record raises
+    # "TypeError: Object of type bool_/float64 is not JSON serializable" downstream.
+    return {"time": str(sig["time"]), "direction": int(d), "entry": float(entry),
             "fill_time": str(df15.index[fill_idx]), "exit_time": str(df15.index[exit_idx]),
-            "gross_pips": round(gross, 4), "spread_pips": costs["spread_pips"],
-            "slippage_pips": round(slip, 4), "swap_pips": round(swap_pips, 4),
-            "pnl_pips": round(net, 4)}
+            "gross_pips": float(round(gross, 4)), "spread_pips": float(costs["spread_pips"]),
+            "slippage_pips": float(round(slip, 4)), "swap_pips": float(round(swap_pips, 4)),
+            "pnl_pips": float(round(net, 4))}
 
 
 def compute_metrics(trades: list[dict], settings: dict) -> dict:
@@ -95,11 +99,12 @@ def compute_metrics(trades: list[dict], settings: dict) -> dict:
         if peak > 0:
             max_dd = max(max_dd, (peak - e) / peak)
     gp, gl = sum(wins), -sum(losses)
-    return {"n_trades": n, "net_profit_pips": round(net, 4),
-            "expectancy_pips": round(net / n, 4) if n else 0.0,
-            "win_rate": round(len(wins) / n, 4) if n else 0.0,
-            "profit_factor": round(gp / gl, 4) if gl > 0 else (float("inf") if gp > 0 else 0.0),
-            "max_drawdown": round(max_dd, 4), "equity_curve": [round(e, 2) for e in equity]}
+    return {"n_trades": int(n), "net_profit_pips": float(round(net, 4)),
+            "expectancy_pips": float(round(net / n, 4)) if n else 0.0,
+            "win_rate": float(round(len(wins) / n, 4)) if n else 0.0,
+            "profit_factor": float(round(gp / gl, 4)) if gl > 0 else (float("inf") if gp > 0 else 0.0),
+            "max_drawdown": float(round(max_dd, 4)),
+            "equity_curve": [float(round(e, 2)) for e in equity]}
 
 
 def run_backtest(df15: pd.DataFrame, df1h: pd.DataFrame, params: dict, settings: dict,

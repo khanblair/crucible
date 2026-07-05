@@ -16,34 +16,39 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 
 # ------------------------------------------------------------------- gates
+# Every gate returns bool(...) explicitly: inputs derived from pandas/numpy
+# (e.g. via .iloc[]) stay numpy.float64 through arithmetic, and a bare
+# comparison of two numpy floats yields numpy.bool_, not a native bool.
+# json.dumps cannot serialize numpy.bool_ — this bit in production once
+# already (see backtest.py's harness-boundary cast for the matching fix).
 def gate_improvement(candidate_net: float, baseline_net: float, min_rel: float) -> bool:
     """Meaningful improvement, not marginal. A point-estimate tie goes to
     the incumbent."""
     if baseline_net > 0:
-        return candidate_net > baseline_net * (1.0 + min_rel)
+        return bool(candidate_net > baseline_net * (1.0 + min_rel))
     if baseline_net < 0:
-        return candidate_net > baseline_net + abs(baseline_net) * min_rel
-    return candidate_net > 0.0
+        return bool(candidate_net > baseline_net + abs(baseline_net) * min_rel)
+    return bool(candidate_net > 0.0)
 
 
 def gate_trades(n_trades: int, floor: int) -> bool:
     """Statistical floor: results built on a handful of trades are noise."""
-    return n_trades >= floor
+    return bool(n_trades >= floor)
 
 
 def gate_drawdown(max_dd: float, ceiling: float) -> bool:
-    return max_dd < ceiling
+    return bool(max_dd < ceiling)
 
 
 def gate_win_rate(win_rate: float, floor: float) -> bool:
-    return win_rate > floor
+    return bool(win_rate > floor)
 
 
 def gate_consistency(test_net: float, train_net: float, max_dropoff: float) -> bool:
     """A sharp train->test collapse is the signature of overfitting."""
     if train_net <= 0:
         return True  # nothing to collapse from; other gates still apply
-    return test_net >= train_net * (1.0 - max_dropoff)
+    return bool(test_net >= train_net * (1.0 - max_dropoff))
 
 
 def evaluate_candidate(candidate_oos: dict, baseline_oos: dict, candidate_train: dict,

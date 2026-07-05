@@ -93,3 +93,22 @@ def test_overfit_candidate_rejected_despite_beating_baseline():
     assert not verdict["accepted"]
     failed = [g["name"] for g in verdict["gates"] if not g["passed"]]
     assert failed == ["consistency"]
+
+
+def test_gate_results_are_json_serializable_from_numpy_inputs():
+    """Real production bug: metrics derived from pandas .iloc[] indexing are
+    numpy.float64, and a bare comparison of two numpy floats yields
+    numpy.bool_ — which json.dumps refuses to serialize. This crashed the
+    first live optimize.yml run once Phase 0 stopped gating it. Every gate
+    must return a native bool even when fed numpy-typed metrics."""
+    import json
+
+    import numpy as np
+
+    numpy_metrics = _metrics(net=np.float64(120.0), n=np.int64(40),
+                             dd=np.float64(0.05), wr=np.float64(0.55))
+    verdict = evaluate_candidate(numpy_metrics, _metrics(net=100.0),
+                                 _metrics(net=150.0), {"gates": GATES})
+    for g in verdict["gates"]:
+        assert isinstance(g["passed"], bool), f"{g['name']} passed is {type(g['passed'])}"
+    json.dumps(verdict)   # must not raise TypeError: Object of type bool_ is not JSON serializable

@@ -175,3 +175,54 @@ def test_phase0_passed_false_when_report_missing(tmp_path, monkeypatch):
     (tmp_path / "docs").mkdir()
     monkeypatch.setattr("src.backtest.ROOT", tmp_path)
     assert phase0_passed() is False
+
+
+# --------------------------------------------------- numpy dtype boundary
+def test_metrics_and_trades_are_json_serializable_on_real_pandas_data():
+    """Real production bug: prices come from pandas .iloc[] indexing, which
+    yields numpy.float64/numpy.bool_, not native Python types. Hand-built
+    float-literal fixtures (used everywhere else in this file) never exercise
+    that path, so this test deliberately runs the harness on a real
+    DataFrame — exactly what broke json.dumps() in the first live
+    optimize.yml run once Phase 0 stopped gating it."""
+    import json as _json
+
+    import numpy as np
+
+    from src.backtest import run_backtest
+
+    rng = np.random.default_rng(3)
+    n = 24 * 4 * 20
+    idx = pd.date_range("2025-01-01", periods=n, freq="15min")
+    close = 1.10 + np.cumsum(rng.normal(0, 3e-4, n))
+    high = close + np.abs(rng.normal(0, 2e-4, n))
+    low = close - np.abs(rng.normal(0, 2e-4, n))
+    open_ = np.r_[close[0], close[:-1]]
+    df15 = pd.DataFrame({"open": open_, "high": np.maximum.reduce([open_, close, high]),
+                        "low": np.minimum.reduce([open_, close, low]), "close": close,
+                        "volume": 1.0}, index=idx)
+    agg = {"open": "first", "high": "max", "low": "min", "close": "last", "volume": "sum"}
+    df1h = df15.resample("1h").agg(agg).dropna()
+    real_settings = {**SETTINGS, "strategy_fixed": {"ema_fast": 8, "ema_mid": 21, "ema_slow": 50,
+                     "h1_ema_mid": 50, "h1_ema_slow": 200, "rsi_period": 14, "atr_period": 14,
+                     "session_start_hour_utc": 0, "session_end_hour_utc": 24,
+                     "entry_valid_bars": 4, "trail_lookback": 3}}
+    params = {"rsi_buy_low": 45.0, "rsi_buy_high": 65.0, "rsi_sell_low": 35.0,
+             "rsi_sell_high": 55.0, "atr_stop_mult": 1.5, "atr_target_mult": 1.5,
+             "max_body_atr": 0.5, "entry_buffer_pips": 2.0}
+
+    result = run_backtest(df15, df1h, params, real_settings)
+    assert result["metrics"]["n_trades"] > 0, "fixture must produce at least one real trade"
+    # `type(x) is float`, not isinstance: numpy.float64 SUBCLASSES float (and so
+    # passes isinstance/json.dumps just fine) — type() is the only check strict
+    # enough to catch it. numpy.bool_ is the one that actually breaks json.dumps,
+    # but a leaked float64 here is exactly the kind of value whose *comparisons*
+    # (in evaluate.py's gates) produce the numpy.bool_ that does break it.
+    for trade in result["trades"]:
+        for key in ("entry", "gross_pips", "slippage_pips", "swap_pips", "pnl_pips"):
+            assert type(trade[key]) is float, f"{key} is {type(trade[key])}, not native float"
+    for key in ("net_profit_pips", "expectancy_pips", "win_rate", "profit_factor", "max_drawdown"):
+        assert type(result["metrics"][key]) is float, \
+            f"{key} is {type(result['metrics'][key])}, not native float"
+    _json.dumps(result["metrics"])   # must not raise TypeError: Object of type ... not JSON serializable
+    _json.dumps(result["trades"])
