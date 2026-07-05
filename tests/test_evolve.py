@@ -15,24 +15,26 @@ from src.backtest import load_settings
 from src.evolve import (_check_trigger, _relative_change, evolution_cooldown_clear,
                         genome_id_for, losing_streak_and_stuck, refine, run_evolution, screen)
 
-RUNS = pathlib.Path("results/runs")
-
-
-def _write_decision(day: str, baseline_net: float, candidate_net: float) -> pathlib.Path:
-    path = RUNS / f"decision_{day}.json"
+def _write_decision(runs_dir: pathlib.Path, day: str, baseline_net: float,
+                    candidate_net: float) -> pathlib.Path:
+    path = runs_dir / f"decision_{day}.json"
     path.write_text(json.dumps({"date": day, "baseline_oos": {"net_profit_pips": baseline_net},
                                 "candidate_oos": {"net_profit_pips": candidate_net}}))
     return path
 
 
 @pytest.fixture
-def clean_runs():
-    """Isolate these tests from any real results/runs/*.json using a
-    reserved 2099-* date prefix, cleaned up before and after."""
-    made = []
-    yield made
-    for path in made:
-        path.unlink(missing_ok=True)
+def clean_runs(tmp_path, monkeypatch):
+    """True isolation: results/runs/ lives under tmp_path, not the real repo.
+    losing_streak_and_stuck()/evolution_cooldown_clear() take the *last N
+    files by sorted filename across the whole directory* — a fixed date
+    prefix does NOT isolate that from real production decision_*.json files
+    that accumulate daily once the system is actually live, so this
+    monkeypatches src.evolve.ROOT instead of writing into the real repo."""
+    runs_dir = tmp_path / "results" / "runs"
+    runs_dir.mkdir(parents=True)
+    monkeypatch.setattr("src.evolve.ROOT", tmp_path)
+    return runs_dir
 
 
 # --------------------------------------------------------------- _relative_change
@@ -54,9 +56,9 @@ def test_relative_change_zero_baseline():
 def test_trigger_fires_on_losing_streak_plus_stuck_optimizer(clean_runs):
     settings = load_settings()
     n = settings["evolution"]["losing_streak_runs"]
-    days = [f"2099-01-{10 + i:02d}" for i in range(n)]
+    days = [f"2026-01-{10 + i:02d}" for i in range(n)]
     for i, day in enumerate(days):
-        clean_runs.append(_write_decision(day, baseline_net=-10.0 - i, candidate_net=-9.0))
+        _write_decision(clean_runs, day, baseline_net=-10.0 - i, candidate_net=-9.0)
     result = losing_streak_and_stuck(settings)
     assert result["triggered"] is True
     assert result["losing_streak"] is True
@@ -66,9 +68,9 @@ def test_trigger_fires_on_losing_streak_plus_stuck_optimizer(clean_runs):
 def test_trigger_does_not_fire_with_one_fewer_run_than_required(clean_runs):
     settings = load_settings()
     n = settings["evolution"]["losing_streak_runs"]
-    days = [f"2099-02-{10 + i:02d}" for i in range(n - 1)]
+    days = [f"2026-02-{10 + i:02d}" for i in range(n - 1)]
     for day in days:
-        clean_runs.append(_write_decision(day, baseline_net=-10.0, candidate_net=-9.0))
+        _write_decision(clean_runs, day, baseline_net=-10.0, candidate_net=-9.0)
     result = losing_streak_and_stuck(settings)
     assert result["triggered"] is False
     assert "reason" in result
@@ -77,11 +79,11 @@ def test_trigger_does_not_fire_with_one_fewer_run_than_required(clean_runs):
 def test_trigger_does_not_fire_when_baseline_is_winning(clean_runs):
     settings = load_settings()
     n = settings["evolution"]["losing_streak_runs"]
-    days = [f"2099-03-{10 + i:02d}" for i in range(n)]
+    days = [f"2026-03-{10 + i:02d}" for i in range(n)]
     for i, day in enumerate(days):
         # one winning baseline in the middle of the streak breaks it
         baseline = 5.0 if i == n // 2 else -10.0
-        clean_runs.append(_write_decision(day, baseline_net=baseline, candidate_net=-9.0))
+        _write_decision(clean_runs, day, baseline_net=baseline, candidate_net=-9.0)
     result = losing_streak_and_stuck(settings)
     assert result["losing_streak"] is False
     assert result["triggered"] is False
@@ -90,10 +92,10 @@ def test_trigger_does_not_fire_when_baseline_is_winning(clean_runs):
 def test_trigger_does_not_fire_when_optimizer_is_still_improving(clean_runs):
     settings = load_settings()
     n = settings["evolution"]["losing_streak_runs"]
-    days = [f"2099-04-{10 + i:02d}" for i in range(n)]
+    days = [f"2026-04-{10 + i:02d}" for i in range(n)]
     for i, day in enumerate(days):
         # candidate net profit climbs meaningfully across the window: not stuck
-        clean_runs.append(_write_decision(day, baseline_net=-10.0, candidate_net=-9.0 + i * 2.0))
+        _write_decision(clean_runs, day, baseline_net=-10.0, candidate_net=-9.0 + i * 2.0)
     result = losing_streak_and_stuck(settings)
     assert result["stuck"] is False
     assert result["triggered"] is False
@@ -103,12 +105,12 @@ def test_trigger_boundary_exactly_at_stuck_epsilon(clean_runs):
     settings = load_settings()
     eps = settings["evolution"]["stuck_improvement_epsilon"]
     n = settings["evolution"]["losing_streak_runs"]
-    days = [f"2099-05-{10 + i:02d}" for i in range(n)]
+    days = [f"2026-05-{10 + i:02d}" for i in range(n)]
     first_best = -10.0
     last_best = first_best + first_best * -eps          # exactly eps relative improvement
     for i, day in enumerate(days):
         candidate = first_best if i == 0 else (last_best if i == n - 1 else -9.5)
-        clean_runs.append(_write_decision(day, baseline_net=-10.0, candidate_net=candidate))
+        _write_decision(clean_runs, day, baseline_net=-10.0, candidate_net=candidate)
     result = losing_streak_and_stuck(settings)
     assert result["stuck"] is True   # "not more than epsilon" -> boundary counts as stuck
 
@@ -121,20 +123,18 @@ def test_cooldown_clear_with_no_prior_attempts(clean_runs):
 
 def test_cooldown_blocks_immediately_after_an_attempt(clean_runs):
     settings = load_settings()
-    today = dt.date(2099, 6, 15)
-    path = RUNS / f"evolution_{today.isoformat()}.json"
+    today = dt.date(2026, 6, 15)
+    path = clean_runs / f"evolution_{today.isoformat()}.json"
     path.write_text(json.dumps({"date": today.isoformat()}))
-    clean_runs.append(path)
     assert evolution_cooldown_clear(settings, today=today) is False
 
 
 def test_cooldown_clears_after_the_configured_quarters(clean_runs):
     settings = load_settings()
     quarters = settings["evolution"]["cooldown_quarters"]
-    attempt_date = dt.date(2099, 1, 1)
-    path = RUNS / f"evolution_{attempt_date.isoformat()}.json"
+    attempt_date = dt.date(2026, 1, 1)
+    path = clean_runs / f"evolution_{attempt_date.isoformat()}.json"
     path.write_text(json.dumps({"date": attempt_date.isoformat()}))
-    clean_runs.append(path)
     later = dt.date(attempt_date.year, attempt_date.month + quarters * 3, attempt_date.day) \
         if attempt_date.month + quarters * 3 <= 12 \
         else dt.date(attempt_date.year + 1, attempt_date.month + quarters * 3 - 12, attempt_date.day)
@@ -221,7 +221,7 @@ def test_check_trigger_ignores_phase0_status(monkeypatch, clean_runs):
     settings = load_settings()
     n = settings["evolution"]["losing_streak_runs"]
     for i in range(n):
-        clean_runs.append(_write_decision(f"2099-10-{10 + i:02d}", -10.0 - i, -9.0 - i * 0.001))
+        _write_decision(clean_runs, f"2026-10-{10 + i:02d}", -10.0 - i, -9.0 - i * 0.001)
     monkeypatch.setattr("src.evolve.phase0_passed", lambda: False)
     fires_when_failed = _check_trigger()
     monkeypatch.setattr("src.evolve.phase0_passed", lambda: True)
