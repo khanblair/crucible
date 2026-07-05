@@ -1,0 +1,43 @@
+/* Shared design tokens, nav, and common components for every docs/ page.
+   Page-specific rules (chart sizing, mind-map SVG, KB search box) live in
+   that page's own <style> block — keep this file to what's genuinely shared. */
+:root { --bg:#0f1419; --card:#1a2129; --text:#e6e8ea; --dim:#8b949e;
+        --green:#3fb950; --red:#f85149; --blue:#58a6ff; --amber:#d29922; --purple:#9f7aea; }
+* { box-sizing:border-box; margin:0; }
+body { background:var(--bg); color:var(--text); font:15px/1.5 -apple-system,'Segoe UI',sans-serif;
+       padding:1.5rem 2rem 2rem; max-width:1100px; margin:auto; }
+h1 { font-size:1.6rem; } h1 span { color:var(--dim); font-weight:400; font-size:1rem; }
+h2 { font-size:1.05rem; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; margin-bottom:.6rem; }
+a { color:var(--blue); }
+
+/* -------------------------------------------------------------------- nav */
+nav.sitenav { display:flex; flex-wrap:wrap; gap:.4rem 1.2rem; align-items:center;
+              padding-bottom:1rem; margin-bottom:.5rem; border-bottom:1px solid #2d333b; }
+nav.sitenav .brand { font-weight:700; margin-right:.6rem; white-space:nowrap; }
+nav.sitenav a { color:var(--dim); text-decoration:none; font-size:.92rem; padding:.25rem 0; }
+nav.sitenav a:hover { color:var(--text); }
+nav.sitenav a.active { color:var(--text); border-bottom:2px solid var(--blue); }
+
+/* ------------------------------------------------------------- components */
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1rem; margin-top:1.5rem; }
+.tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; margin-top:1.5rem; }
+.card { background:var(--card); border:1px solid #2d333b; border-radius:8px; padding:1.1rem; }
+.wide { grid-column:1/-1; }
+table { width:100%; border-collapse:collapse; font-size:.88rem; }
+th,td { text-align:left; padding:.35rem .5rem; border-bottom:1px solid #2d333b; }
+th { color:var(--dim); font-weight:500; }
+.ok { color:var(--green); } .bad { color:var(--red); } .warn { color:var(--amber); }
+.big { font-size:1.5rem; font-weight:600; }
+.dim { color:var(--dim); font-size:.85rem; }
+.tile .label { color:var(--dim); font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; }
+.tile .value { font-size:1.4rem; font-weight:600; margin-top:.2rem; }
+.legend { font-size:.8rem; color:var(--dim); margin-bottom:.3rem; }
+.legend b { font-weight:600; }
+
+/* -------------------------------------------------------------- responsive */
+@media (max-width: 520px) {
+  body { padding:1rem 1rem 1.5rem; }
+  h1 { font-size:1.3rem; }
+  nav.sitenav { gap:.3rem .8rem; }
+  .tiles, .grid { grid-template-columns:1fr; }
+}

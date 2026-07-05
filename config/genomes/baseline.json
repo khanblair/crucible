@@ -1,0 +1,7 @@
+{
+  "id": "baseline",
+  "entry_signal": "ema_pullback",
+  "exit_style": "atr_trail_half",
+  "created": "2026-07-05",
+  "created_by": "phase0-seed"
+}

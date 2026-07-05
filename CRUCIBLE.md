@@ -3,7 +3,7 @@
 
 **Target Market:** EUR/USD (15-Minute and 1-Hour charts)
 **Built By:** Blair Khan
-**Version:** 1.1 — July 2026
+**Version:** 1.3 — July 2026
 **Stack:** GitHub Actions · Optuna · DeepSeek · Discord · GitHub Pages · Twelve Data API · Dukascopy
 
 ---
@@ -80,6 +80,18 @@ Not every part of the strategy is adjusted by the system. The core logic — the
 - The number of pips used as a buffer on entry orders
 
 Changing these numbers changes how strict or relaxed the strategy is without changing the underlying logic. Crucible finds the combination of these numbers that performed best on real historical data without overfitting to any one specific period.
+
+---
+
+## Genome Evolution — A Second Tier of Self-Improvement
+
+Parameter optimization can only ever find the least-losing version of a strategy that has no edge to begin with. If the underlying logic itself is the problem — as Phase 0 revealed it can be — no amount of number-tuning fixes that. Genome evolution is a second, higher tier that lets Crucible try a genuinely different strategy structure, not just different numbers within the same one.
+
+**Genomes, slots, and modules:** A *genome* is a full strategy structure — a specific choice for each *slot*, where a slot is a stage of the strategy with more than one human-written implementation to choose from. The two slots are the entry signal (today's EMA-pullback logic, or alternatives like a breakout or mean-reversion entry) and the exit style (today's ATR-trail-with-half-profit-lock logic, or a simpler fixed-multiple exit). Every other piece of the strategy — the 1-hour trend confirmation, the RSI filter, the candle-quality filter, the session filter — is shared by every genome and never varies. Each module is small, human-authored, and tested in isolation exactly like every other piece of Crucible's logic; no module is ever written by an AI model.
+
+**When it runs:** Genome evolution is not on the weekly schedule. It triggers only when two things are both true: the last five optimization runs have each shown the active strategy losing money out-of-sample, and the parameter search itself has stopped finding meaningful improvement — the signature of being stuck with broken logic, not merely unlucky. When triggered, it screens every genome combination with a quick backtest, takes the most promising few, and runs the full Optuna parameter search on each of those — the same rigor applied to numbers today is applied to structures here. A winning candidate must then pass every existing Evaluator gate, plus a stricter bar reserved for structural change: a larger margin of improvement, and it must beat Champion Zero outright, not merely the current baseline. Changing strategy logic is a bigger commitment than tuning a number, and it is held to a correspondingly higher standard. If nothing clears that bar, the system reports so, keeps the current genome, and does not try again for a full quarter.
+
+**A pull request, not a silent commit:** This is the one place Crucible's automation does not commit directly to `main`. A winning genome opens a pull request with the full evidence — what was screened, what won, the before-and-after numbers, every gate's result — and a Discord message announces it immediately. The engineer has 24 hours to review it. A reminder arrives 30 minutes before that window closes. If it closes without a decision, the change merges on its own — self-evolution stays honest and auditable, but it does not wait forever for a human who may not be watching. Parameter changes within whichever genome is currently active remain exactly as autonomous as they have always been; only a change of *which* structure is running requires this review window.
 
 ---
 
@@ -251,7 +263,7 @@ Several hard limits are built into the system to prevent runaway behavior.
 
 **Runtime and budget ceiling:** The optimization workflow has a strict 60-minute maximum runtime, and the daily monitoring workflow a 10-minute maximum. With one heavy run per week and five light runs, total consumption stays around 500 Actions minutes per month — a quarter of GitHub's 2,000-minute free allowance for private repositories, leaving ample headroom. If any workflow exceeds its limit, GitHub terminates it and the Discord notification includes an alert that the run did not complete normally.
 
-**Write permissions are minimal:** The automated workflow may modify only the files inside the `config/regimes/` folder plus the `config/active.json` pointer, and append to the `results/` folder. It cannot touch the backtest engine, the evaluation logic, the workflow files, or `config/champion_zero.json`. This prevents any bad output from corrupting the core system architecture.
+**Write permissions are minimal:** The automated workflow may modify only the files inside the `config/regimes/` folder plus the `config/active.json` pointer, and append to the `results/` folder. It cannot touch the backtest engine, the evaluation logic, the workflow files, or `config/champion_zero.json`. This prevents any bad output from corrupting the core system architecture. One field is treated differently within that folder: a regime file's numeric `params` may still be committed directly, but its `genome` pointer — which structure is active — may only change through a pull request, whether a human merges it or the 24-hour review window elapses first. Changing a number stays fully autonomous; changing the logic behind the numbers always leaves a reviewable trail.
 
 **Two drawdown numbers, two jobs:** the monitoring decay alert fires at 8% drawdown (or when rolling 20-trade expectancy turns negative) and schedules an early optimization run; the Evaluator's rejection ceiling sits at 12%. The alert is deliberately tighter than the gate so the system reacts before the situation is bad enough to fail.
 
@@ -285,11 +297,11 @@ DeepSeek does not optimize parameters, does not classify market regimes, does no
 
 The Crucible repository is organized into clear sections, each with a specific purpose. The companion document `CRUCIBLE_STRUCTURE.md` specifies the full tree; in summary:
 
-The `src` folder contains one Python module per stage: data fetching, strategy logic, backtesting, regime classification, optimization, evaluation, forward logging, and reporting. The `config` folder contains `champion_zero.json` (frozen, never modified), the `regimes/` subfolder with the four regime parameter files the bot is allowed to modify, and `active.json`, the pointer recording which regime set is currently selected. The `data` folder holds the Dukascopy candle files and the committed intrabar-ordering table — raw ticks are never stored. The `results` folder stores the performance logs and the `forward_log/` of daily paper signals. The `docs` folder is the GitHub Pages source, including the Phase 0 report, rebuilt automatically after each run. The `tests` folder covers the two components whose silent failure would corrupt everything: the Evaluator gates and the backtest harness.
+The `src` folder contains one Python module per stage: data fetching, strategy logic, backtesting, regime classification, optimization, evaluation, forward logging, reporting, and — for genome evolution — a small module registry (`src/modules/`) plus the genome definitions and the screen-then-refine search (`src/genome.py`, `src/evolve.py`). The `config` folder contains `champion_zero.json` (frozen, never modified), the `regimes/` subfolder with the four regime files the bot is allowed to modify, `genomes/` with the human-authored strategy structures, and `active.json`, the pointer recording which regime set is currently selected. The `data` folder holds the Dukascopy candle files and the committed intrabar-ordering table — raw ticks are never stored. The `results` folder stores the performance logs and the `forward_log/` of daily paper signals. The `docs` folder is the GitHub Pages source, including the Phase 0 report, rebuilt automatically after each run. The `tests` folder covers the components whose silent failure would corrupt everything: the Evaluator gates, the backtest harness, and the genome modules.
 
-The strategy logic file and the evaluation gatekeeper file are both committed and version-controlled but are never modified by the automated workflow. Any changes to these files must be made by a human engineer through a normal pull request — and every pull request is gated by a CI workflow that runs the full test suite (every Evaluator gate, the backtest cost model) and compiles every module before the change can merge. The same CI runs on any code push to main, while skipping the bot's routine data and result commits so it costs no Actions minutes on appends. The Python version is pinned explicitly so runner defaults can never shift underneath the system.
+The strategy logic file, the evaluation gatekeeper file, and the module menus themselves are all committed and version-controlled but are never modified by the automated workflow. Any changes to these files must be made by a human engineer through a normal pull request — and every pull request is gated by a CI workflow that runs the full test suite (every Evaluator gate, the backtest cost model, every genome module) and compiles every module before the change can merge. The same CI runs on any code push to main, while skipping the bot's routine data and result commits so it costs no Actions minutes on appends. The Python version is pinned explicitly so runner defaults can never shift underneath the system.
 
-The division of labor for review is explicit. Automated parameter changes do not go through pull requests: their reviewer is the Evaluator itself — deterministic, tested, and stricter than a human eyeballing JSON diffs — with the Discord report keeping the engineer aware and `git revert` as the undo. Human code changes get the opposite treatment: no code reaches main without passing CI.
+The division of labor for review is explicit, and it now has three tiers rather than two. Automated parameter changes do not go through pull requests: their reviewer is the Evaluator itself — deterministic, tested, and stricter than a human eyeballing JSON diffs — with the Discord report keeping the engineer aware and `git revert` as the undo. Automated *structural* changes (which genome is active) do go through a pull request, but with a 24-hour review window rather than an indefinite one — a middle tier between full autonomy and a normal human-paced review. Human code changes get the strictest treatment: no code reaches main without passing CI, and there is no auto-merge timeout.
 
 Three secrets are stored in GitHub Actions and never appear in any file: `TWELVE_DATA_KEY` for context candle fetching, `DEEPSEEK_KEY` for report writing, and `DISCORD_WEBHOOK` for notifications. Rotating any of these requires only updating the secret value in the repository settings — no code changes needed.
 
@@ -298,6 +310,8 @@ Three secrets are stored in GitHub Actions and never appear in any file: `TWELVE
 ## Monitoring and Observability
 
 **GitHub Pages Dashboard:** A live webpage hosted from the repository shows the current active regime and parameters, staleness flags for any regime set not validated within 90 days, the equity curve over time, the Champion Zero vs. evolved-system comparison curves, the live-vs-backtest divergence metric, the win rate trend, the drawdown history, and a log of every parameter change ever made with dates and reasons. This updates automatically after every run.
+
+The dashboard is one of three pages sharing a common header: an **Architecture** page (a mind map of the whole system — every box a real file or workflow) and a **Knowledge Base** page (a searchable glossary and FAQ). The dashboard is the only one rebuilt automatically; the other two are static reference pages, kept up to date by hand when the system's shape changes.
 
 **Discord Channel:** A dedicated channel receives a structured embed after every run — a brief daily status from monitoring runs (including any regime swaps), and a full report from optimization runs including the outcome (accepted or rejected), the specific net-of-cost metrics before and after, which parameters changed and by how much, the champion-vs-challenger standing, and any warnings or anomalies.
 
@@ -315,7 +329,7 @@ To be clear about scope:
 
 Crucible does not place live trades. It is a strategy perfection engine, not an execution engine. Connecting it to a live trading account requires a separate execution layer that is outside the scope of this system.
 
-Crucible does not invent new strategies. It optimizes the numerical boundaries of the existing strategy logic. The core rules — which indicators to use, how entries and exits work, which sessions to trade — are set by the human engineer and do not change.
+Crucible does not invent new strategies out of thin air, and never with an AI model. Its structural search (genome evolution) chooses among a small, fixed menu of entry-signal and exit-style modules that a human engineer wrote and tested in advance — it recombines and searches, it does not author logic. The session filter, the trend-confirmation rule, and the two module menus themselves only change through a human pull request, same as the strategy and evaluator files always have.
 
 Crucible does not assume that adaptive beats static. It measures that claim continuously against a frozen baseline, and it suspends itself if the measurement says otherwise.
 

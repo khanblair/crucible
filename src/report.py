@@ -182,6 +182,55 @@ def plain_summary(settings: dict, decision: dict | None = None) -> str:
     return " ".join(parts)
 
 
+def plain_summary_evolution(settings: dict, record: dict) -> str:
+    """Non-technical summary for a genome-evolution PR — a structural change,
+    not a parameter tweak, so it gets its own plain-English framing."""
+    base = _usd(record["baseline_oos"]["net_profit_pips"], settings)
+    cand = _usd(record["candidate_oos"]["net_profit_pips"], settings)
+    champ = _usd(record["champion_oos"]["net_profit_pips"], settings)
+    days = settings["walk_forward"]["oos_days"]
+    parts = [
+        f"The system tried a completely different way of trading and thinks it "
+        f"found something better. On the {days}-day test period, the current way "
+        f"would have {_made_or_lost(base)} and the new way {_made_or_lost(cand)} "
+        f"— it also beat the original day-one strategy, which would have "
+        f"{_made_or_lost(champ)} over the same period.",
+        "I opened a pull request for you to review — you have "
+        f"{settings['evolution']['pr_auto_merge_hours']:.0f} hours, after which it "
+        "merges automatically if you don't respond.",
+        "These are simulated results, not financial advice.",
+    ]
+    return " ".join(parts)
+
+
+def plain_reminder_evolution(hours_left: float) -> str:
+    if hours_left < 1:
+        return (f"Reminder: about {round(hours_left * 60)} minutes left before this "
+                "pull request auto-merges.")
+    return f"Reminder: about {hours_left:.1f} hours left before this pull request auto-merges."
+
+
+def evolution_pr_opened_report(record: dict, pr_url: str, settings: dict) -> None:
+    """Immediate Discord notification the moment a genome-evolution PR opens."""
+    fields = [
+        {"name": "Proposed genome", "value": f"{record['winner_genome']['entry_signal']} + "
+                                             f"{record['winner_genome']['exit_style']}", "inline": True},
+        {"name": "Review window", "value": f"{settings['evolution']['pr_auto_merge_hours']:.0f} hours",
+         "inline": True},
+        {"name": "Pull request", "value": pr_url, "inline": False},
+        {"name": "In plain English", "value": plain_summary_evolution(settings, record)[:1024],
+         "inline": False},
+    ]
+    discord_notify("Crucible · genome evolution proposal", "A new strategy structure "
+                   "passed every gate and is waiting for your review.", fields, 0x9F7AEA)
+
+
+def evolution_pr_reminder_report(pr_url: str, hours_left: float) -> None:
+    """Discord reminder fired once, ~pr_reminder_hours_before the auto-merge deadline."""
+    discord_notify("Crucible · genome evolution reminder", plain_reminder_evolution(hours_left),
+                   [{"name": "Pull request", "value": pr_url, "inline": False}], 0xD29922)
+
+
 def build_dashboard() -> None:
     """Rebuild docs/index.html — a single self-contained page — from results."""
     active = json.loads((ROOT / "config" / "active.json").read_text())
@@ -224,10 +273,27 @@ def build_dashboard() -> None:
                                 for p in sorted(RUNS.glob("regime_*.json")))]
     from src.backtest import load_settings
     settings = load_settings()
+
+    latest_evolution = _latest("evolution_*.json")
+    evolution = None
+    if latest_evolution:
+        evolution = {
+            "date": latest_evolution["date"],
+            "attempted": True,
+            "screened": [{"entry_signal": s["genome"]["entry_signal"],
+                         "exit_style": s["genome"]["exit_style"],
+                         "net_profit_pips": s["net_profit_pips"]}
+                        for s in latest_evolution.get("screened", [])],
+            "winner_genome": latest_evolution.get("winner_genome"),
+            "accepted": latest_evolution.get("accepted"),
+            "pr_url": latest_evolution.get("pr_url"),
+            "pr_auto_merge_hours": settings["evolution"]["pr_auto_merge_hours"],
+        }
+
     data = {"generated": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
             "active": active, "regime": regime_log, "changes": changes,
             "divergence": divergence[-12:], "price": price, "forward": forward,
-            "regime_history": regime_history[-30:],
+            "regime_history": regime_history[-30:], "evolution": evolution,
             "plain": {"text": plain_summary(settings, decision),
                       "money": _forward_money(settings),
                       "lot_size": settings["reporting"]["lot_size"]},

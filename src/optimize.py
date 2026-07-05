@@ -13,7 +13,7 @@ import pathlib
 import optuna
 import pandas as pd
 
-from src.backtest import load_intrabar, load_settings, run_backtest
+from src.backtest import load_intrabar, load_settings, phase0_passed, run_backtest
 from src.regime import classify, is_stale, validate_active
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -54,8 +54,9 @@ def target_regime(df1h: pd.DataFrame, settings: dict) -> str:
 
 def search(df15: pd.DataFrame, df1h: pd.DataFrame, settings: dict,
            intrabar: dict, allowed_dates: set | None, n_trials: int,
-           timeout_s: float) -> tuple[dict, dict]:
-    """Bayesian search on the training window only. Returns (params, train metrics)."""
+           timeout_s: float, genome: dict | None = None) -> tuple[dict, dict]:
+    """Bayesian search on the training window only, within a fixed genome
+    (defaults to baseline). Returns (params, train metrics)."""
     space = settings["search_space"]
 
     def objective(trial: optuna.Trial) -> float:
@@ -63,7 +64,8 @@ def search(df15: pd.DataFrame, df1h: pd.DataFrame, settings: dict,
         if params["rsi_buy_low"] >= params["rsi_buy_high"] or \
            params["rsi_sell_low"] >= params["rsi_sell_high"]:
             return float("-inf")
-        m = run_backtest(df15, df1h, params, settings, intrabar, allowed_dates)["metrics"]
+        m = run_backtest(df15, df1h, params, settings, intrabar, allowed_dates,
+                         genome)["metrics"]
         if m["n_trades"] < settings["gates"]["min_oos_trades"]:
             return float("-inf")
         trial.set_user_attr("metrics", {k: v for k, v in m.items() if k != "equity_curve"})
@@ -79,6 +81,10 @@ def search(df15: pd.DataFrame, df1h: pd.DataFrame, settings: dict,
 
 
 def _main() -> None:
+    if not phase0_passed():
+        print("Phase 0 has not passed (see docs/phase0_report.md) — the optimization "
+             "loop must not run against a strategy with no proven edge. Exiting cleanly.")
+        return
     settings = load_settings()
     active = validate_active()  # every run begins by validating the pointer
     from src.data import load_candles
@@ -93,11 +99,14 @@ def _main() -> None:
                            "extend the historical dataset before optimizing")
     allowed = regime_dates(train1h, settings, regime) or None
     cfg = settings["optuna"]
+    genome = json.loads((ROOT / "config" / "regimes" / f"{regime}.json").read_text())["genome"]
+    from src.genome import load_genome
+    genome_def = load_genome(genome)
     params, train_metrics = search(train15, train1h, settings, intrabar, allowed,
-                                   cfg["n_trials"], cfg["timeout_minutes"] * 60)
+                                   cfg["n_trials"], cfg["timeout_minutes"] * 60, genome_def)
     candidate = {
         "date": dt.date.today().isoformat(), "type": "candidate", "regime": regime,
-        "params": params, "train_metrics": train_metrics,
+        "genome": genome, "params": params, "train_metrics": train_metrics,
         "baseline_file": f"config/regimes/{regime}.json",
         "oos_start": str(windows["oos_start"]), "oos_end": str(windows["oos_end"]),
         "holdout_start": str(windows["holdout_start"]), "evaluated": False,

@@ -1,6 +1,7 @@
 {
   "name": "champion_zero",
   "frozen": true,
+  "genome": "baseline",
   "created": "2026-07-04",
   "note": "Phase 0 hand-set parameters. This file is NEVER modified by anyone or anything.",
   "params": {

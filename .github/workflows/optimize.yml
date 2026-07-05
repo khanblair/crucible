@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  actions: write   # lets this run dispatch evolve.yml when the trigger fires
 
 concurrency:
   group: crucible-runs
@@ -48,6 +49,16 @@ jobs:
           git add config/regimes config/active.json data/candles results docs
           git diff --cached --quiet || git commit -m "optimize: weekly run $(date -u +%F)"
           git push
+
+      - name: Check genome-evolution trigger
+        id: evolution_check
+        run: echo "fire=$(python -m src.evolve --check-trigger)" >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch genome evolution
+        if: steps.evolution_check.outputs.fire == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run evolve.yml
 
       - name: Alert on abnormal termination
         if: failure()

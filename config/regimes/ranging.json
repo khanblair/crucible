@@ -1,5 +1,6 @@
 {
   "name": "ranging",
+  "genome": "baseline",
   "last_validated": "2026-07-04",
   "validated_by": "phase0-seed",
   "params": {

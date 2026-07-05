@@ -4,31 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Crucible — EUR/USD Strategy Engine</title>
+<link rel="stylesheet" href="assets/style.css">
 <style>
-  :root { --bg:#0f1419; --card:#1a2129; --text:#e6e8ea; --dim:#8b949e;
-          --green:#3fb950; --red:#f85149; --blue:#58a6ff; --amber:#d29922; }
-  * { box-sizing:border-box; margin:0; }
-  body { background:var(--bg); color:var(--text); font:15px/1.5 -apple-system,'Segoe UI',sans-serif; padding:2rem; max-width:1100px; margin:auto; }
-  h1 { font-size:1.6rem; } h1 span { color:var(--dim); font-weight:400; font-size:1rem; }
-  h2 { font-size:1.05rem; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; margin-bottom:.6rem; }
-  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1rem; margin-top:1.5rem; }
-  .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; margin-top:1.5rem; }
-  .card { background:var(--card); border:1px solid #2d333b; border-radius:8px; padding:1.1rem; }
-  .wide { grid-column:1/-1; }
-  table { width:100%; border-collapse:collapse; font-size:.88rem; }
-  th,td { text-align:left; padding:.35rem .5rem; border-bottom:1px solid #2d333b; }
-  th { color:var(--dim); font-weight:500; }
-  .ok { color:var(--green); } .bad { color:var(--red); } .warn { color:var(--amber); }
-  .big { font-size:1.5rem; font-weight:600; }
-  .dim { color:var(--dim); font-size:.85rem; }
-  .tile .label { color:var(--dim); font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; }
-  .tile .value { font-size:1.4rem; font-weight:600; margin-top:.2rem; }
   svg { width:100%; height:230px; display:block; }
-  .legend { font-size:.8rem; color:var(--dim); margin-bottom:.3rem; }
-  .legend b { font-weight:600; }
 </style>
 </head>
 <body>
+<nav class="sitenav">
+  <span class="brand">Crucible</span>
+  <a href="index.html" class="active">Dashboard</a>
+  <a href="architecture.html">Architecture</a>
+  <a href="knowledge-base.html">Knowledge Base</a>
+</nav>
 <h1>Crucible <span>· EUR/USD strategy perfection engine</span></h1>
 <p class="dim" id="generated"></p>
 <div class="tiles" id="tiles"></div>
@@ -48,6 +35,7 @@
     <b style="color:var(--blue)">— Evolved</b></div>
     <svg id="equity" viewBox="0 0 1000 230" preserveAspectRatio="none"></svg>
     <div id="champion"></div></div>
+  <div class="card wide"><h2>Evolution status</h2><div id="evolution"></div></div>
   <div class="card"><h2>Regime history</h2><div id="regimehist"></div></div>
   <div class="card"><h2>Parameter change log</h2><div id="changes"></div></div>
   <div class="card wide"><h2>Live-vs-backtest divergence</h2><div id="divergence"></div></div>
@@ -151,6 +139,26 @@ if (!DATA) {
                             linePath(ch.evolved_equity, '#58a6ff');
   } else {
     $('champion').innerHTML = '<span class="dim">no optimization run recorded yet</span>';
+  }
+
+  const ev = DATA.evolution;
+  if (!ev) {
+    $('evolution').innerHTML = '<span class="dim">no genome-evolution attempt has been ' +
+      'triggered yet — this only runs after a losing streak with a stuck parameter search</span>';
+  } else {
+    const rows = (ev.screened || []).slice().sort((a, b) => b.net_profit_pips - a.net_profit_pips)
+      .map(s => `<tr><td>${s.entry_signal}</td><td>${s.exit_style}</td><td>${s.net_profit_pips}</td></tr>`).join('');
+    let html = `<div class="dim">Last attempt: ${ev.date}</div>` +
+      `<table><tr><th>Entry signal</th><th>Exit style</th><th>Screen net (pips)</th></tr>${rows}</table>`;
+    if (ev.accepted && ev.pr_url) {
+      html += `<p class="ok" style="margin-top:.6rem">Winner: ${ev.winner_genome.entry_signal} + ` +
+        `${ev.winner_genome.exit_style} — <a href="${ev.pr_url}" style="color:var(--blue)">` +
+        `review the pull request</a> (auto-merges in ${ev.pr_auto_merge_hours}h if untouched)</p>`;
+    } else if (ev.winner_genome) {
+      html += `<p class="dim" style="margin-top:.6rem">Best candidate (${ev.winner_genome.entry_signal} + ` +
+        `${ev.winner_genome.exit_style}) did not clear every gate — current structure kept</p>`;
+    }
+    $('evolution').innerHTML = html;
   }
 
   const rh = DATA.regime_history || [];

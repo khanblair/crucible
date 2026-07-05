@@ -13,8 +13,8 @@ import pathlib
 import pandas as pd
 
 from src.backtest import load_intrabar, load_settings, simulate_trade, run_backtest
+from src.genome import assemble, load_genome
 from src.regime import validate_active
-from src.strategy import generate_signals
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LOG = ROOT / "results" / "forward_log" / "signals.jsonl"
@@ -37,12 +37,15 @@ def log_signals(df15: pd.DataFrame, df1h: pd.DataFrame, settings: dict) -> dict:
     """Append new hypothetical signals from the active parameters, then try to
     resolve any still-open ones against the newly available candles."""
     active = validate_active()
-    params = json.loads((ROOT / active["params_file"]).read_text())["params"]
+    active_file = json.loads((ROOT / active["params_file"]).read_text())
+    params = active_file["params"]
+    genome = load_genome(active_file.get("genome", "baseline"))
     existing = _read_jsonl(LOG)
     seen = {r["time"] for r in existing if r["kind"] == "signal"}
     resolved = {r["signal_time"] for r in existing if r["kind"] == "resolution"}
 
-    signals = generate_signals(df15, df1h, params, settings["strategy_fixed"])
+    entry_fn, _ = assemble(genome)
+    signals = entry_fn(df15, df1h, params, settings["strategy_fixed"])
     horizon = df15.index[-1] - pd.Timedelta(days=10)
     fresh = [s for s in signals if s["time"] >= horizon and str(s["time"]) not in seen]
     new_records = [{"kind": "signal", "time": str(s["time"]), "direction": s["direction"],
@@ -61,7 +64,7 @@ def log_signals(df15: pd.DataFrame, df1h: pd.DataFrame, settings: dict) -> dict:
             continue
         sig = {"time": pd.Timestamp(rec["time"]), "direction": rec["direction"],
                "entry": rec["entry"], "stop": rec["stop"], "target": rec["target"]}
-        trade = simulate_trade(df15, i, sig, settings, intrabar)
+        trade = simulate_trade(df15, i, sig, settings, intrabar, genome["exit_style"])
         if trade is None:
             resolutions.append({"kind": "resolution", "signal_time": rec["time"],
                                 "outcome": "unfilled", "pnl_pips": 0.0,
@@ -107,8 +110,10 @@ def divergence_check(df15: pd.DataFrame, df1h: pd.DataFrame, settings: dict) -> 
     fwd_wr = sum(1 for p in sample if p > 0) / len(sample)
 
     active = validate_active()
-    params = json.loads((ROOT / active["params_file"]).read_text())["params"]
-    bt = run_backtest(df15, df1h, params, settings, load_intrabar())
+    active_file = json.loads((ROOT / active["params_file"]).read_text())
+    params = active_file["params"]
+    genome = load_genome(active_file.get("genome", "baseline"))
+    bt = run_backtest(df15, df1h, params, settings, load_intrabar(), genome=genome)
     pnls = [t["pnl_pips"] for t in bt["trades"]]
     if not pnls:
         return {"skipped": "backtest produced no trades to compare against"}

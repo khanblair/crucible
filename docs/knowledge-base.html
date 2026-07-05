@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crucible — Knowledge Base</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  #search { width:100%; padding:.6rem .8rem; margin:1rem 0 1.5rem; border-radius:8px;
+            border:1px solid #2d333b; background:var(--card); color:var(--text); font-size:.95rem; }
+  #search:focus { outline:1px solid var(--blue); }
+  dl.glossary dt { font-weight:600; margin-top:1rem; }
+  dl.glossary dt:first-child { margin-top:0; }
+  dl.glossary dd { color:var(--dim); margin:.2rem 0 0; }
+  .entry { margin-bottom:1.1rem; }
+  .entry.hidden { display:none; }
+  details.faq { margin-bottom:.7rem; }
+  details.faq summary { cursor:pointer; font-weight:600; }
+  details.faq p { color:var(--dim); margin-top:.4rem; }
+  #empty-state { display:none; }
+</style>
+</head>
+<body>
+<nav class="sitenav">
+  <span class="brand">Crucible</span>
+  <a href="index.html">Dashboard</a>
+  <a href="architecture.html">Architecture</a>
+  <a href="knowledge-base.html" class="active">Knowledge Base</a>
+</nav>
+<h1>Crucible <span>· knowledge base</span></h1>
+<p class="dim">Glossary, FAQ, and where to find the full detail. See it visually first on the
+<a href="architecture.html">Architecture</a> page.</p>
+
+<input id="search" type="text" placeholder="Search terms — e.g. &quot;genome&quot;, &quot;cooldown&quot;, &quot;drawdown&quot;…">
+<p id="empty-state" class="dim">No matches — try a shorter word.</p>
+
+<div class="grid">
+  <div class="card wide">
+    <h2>Glossary</h2>
+    <dl class="glossary" id="glossary">
+      <div class="entry" data-terms="genome entry-signal exit-style module structure">
+        <dt>Genome</dt>
+        <dd>A full strategy structure: one choice of entry signal (ema_pullback, breakout,
+          mean_reversion) plus one choice of exit style (atr_trail_half, fixed_r_multiple).
+          Every other rule — session filter, candle quality, RSI band, 1h trend — is fixed and
+          shared by every genome. See <code>src/genome.py</code>.</dd>
+      </div>
+      <div class="entry" data-terms="regime adx atr classification trending ranging volatility">
+        <dt>Regime</dt>
+        <dd>One of four market conditions — trending, ranging, high volatility, low volatility —
+          classified daily from ADX and ATR percentile. Each has its own parameter file; in v1
+          they all share one genome. See <code>src/regime.py</code>.</dd>
+      </div>
+      <div class="entry" data-terms="champion zero baseline frozen day one">
+        <dt>Champion Zero</dt>
+        <dd>The original, hand-set day-one parameters and genome, frozen forever in
+          <code>config/champion_zero.json</code>. Every optimization run replays it alongside the
+          current system — if the evolved system can't beat this simple baseline, something is
+          wrong with the whole premise, not the tuning.</dd>
+      </div>
+      <div class="entry" data-terms="evaluator gate accept reject out of sample oos">
+        <dt>Evaluator / Gates</dt>
+        <dd>The deterministic checks a candidate must pass to be accepted: meaningful improvement
+          (10% for parameters, 20% for a genome), a 30-trade floor, a drawdown ceiling, a win-rate
+          floor, and a consistency check against overfitting. One failure rejects the whole
+          candidate. See <code>src/evaluate.py</code>.</dd>
+      </div>
+      <div class="entry" data-terms="cooldown trading days change churn">
+        <dt>Cooldown</dt>
+        <dd>No parameter change may be accepted within 5 trading days of the previous one —
+          prevents churn and gives every change time to prove itself on new data.</dd>
+      </div>
+      <div class="entry" data-terms="losing streak stuck optimizer trigger evolution">
+        <dt>Losing streak + stuck optimizer</dt>
+        <dd>The trigger for genome evolution: the last 5 optimization runs all show the active
+          strategy losing money out-of-sample, AND the parameter search itself has stopped
+          finding real improvement. Both conditions, not either — this means the logic is broken,
+          not just unlucky.</dd>
+      </div>
+      <div class="entry" data-terms="screen refine funnel optuna bayesian search">
+        <dt>Screen-then-refine funnel</dt>
+        <dd>How genome evolution searches: every candidate structure gets one cheap backtest
+          first (screen), then only the top few get a full Optuna parameter search (refine). Cheap
+          before expensive, always.</dd>
+      </div>
+      <div class="entry" data-terms="pull request pr auto merge 24 hour review github">
+        <dt>Auto-PR / 24-hour auto-merge</dt>
+        <dd>The one place automation doesn't commit directly: a winning genome opens a labeled
+          pull request with full evidence. A human has 24 hours to review it (reminder at ~23.5h);
+          otherwise it merges on its own, provided CI is green.</dd>
+      </div>
+      <div class="entry" data-terms="paper forward log signal hypothetical no live trading">
+        <dt>Paper-forward log</dt>
+        <dd>Daily hypothetical signals recorded against live candles — no real orders, ever. This
+          is how the system checks whether its own backtest still predicts reality.</dd>
+      </div>
+      <div class="entry" data-terms="divergence backtest reality expectancy win rate alert">
+        <dt>Live-vs-backtest divergence</dt>
+        <dd>Monthly check comparing the forward log's real results against what the backtest
+          predicted for the same parameters. Two consecutive alerts pause new parameter changes
+          until a human reviews the execution assumptions.</dd>
+      </div>
+      <div class="entry" data-terms="phase 0 base strategy proof edge">
+        <dt>Phase 0</dt>
+        <dd>The one-time proof that the base strategy has any edge at all, before the optimizer is
+          ever allowed to run on it. An optimizer cannot create an edge that isn't there — it can
+          only find the least-losing version of a bad idea.</dd>
+      </div>
+      <div class="entry" data-terms="intrabar ordering tick worst case stop target">
+        <dt>Intrabar ordering</dt>
+        <dd>When a stop and a target both fall inside one candle, which was touched first? Resolved
+          from a committed lookup table built offline from real tick data; with no record, the
+          engine always assumes the worst case (stop hit first).</dd>
+      </div>
+    </dl>
+  </div>
+
+  <div class="card wide">
+    <h2>FAQ</h2>
+    <details class="faq">
+      <summary>Why doesn't the bot just commit genome changes directly, like it does with parameters?</summary>
+      <p>Changing which strategy structure is running is a bigger commitment than tuning a number.
+        The pull-request-with-a-deadline model keeps a human in the loop by default, while the
+        24-hour timeout stops the system from stalling on a change that already cleared every gate.</p>
+    </details>
+    <details class="faq">
+      <summary>What happens if no genome beats the baseline?</summary>
+      <p>Nothing — cleanly. The attempt is logged, Discord is told, the current genome stays active,
+        and another attempt won't be tried for a full quarter even if the losing streak continues.</p>
+    </details>
+    <details class="faq">
+      <summary>Does Crucible ever place real trades?</summary>
+      <p>No. Everything — backtests, the paper-forward log, genome evolution — is simulation. A
+        separate execution layer, outside this system, would be required to trade live.</p>
+    </details>
+    <details class="faq">
+      <summary>Where do the actual dollar estimates on the dashboard come from?</summary>
+      <p>Deterministic arithmetic (pips × a configurable position size), never the AI report writer —
+        money figures should never be something a language model can misstate.</p>
+    </details>
+  </div>
+
+  <div class="card wide">
+    <h2>Read the full detail</h2>
+    <ul style="padding-left:1.2rem; color:var(--dim)">
+      <li><a href="https://github.com/khanblair/crucible/blob/main/CRUCIBLE.md">CRUCIBLE.md</a> — the full design document</li>
+      <li><a href="https://github.com/khanblair/crucible/blob/main/CRUCIBLE_STRUCTURE.md">CRUCIBLE_STRUCTURE.md</a> — repository layout and design rules</li>
+      <li><a href="https://github.com/khanblair/crucible/tree/main/docs/superpowers/specs">docs/superpowers/specs/</a> — design specs for major features, including genome evolution</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+const search = document.getElementById('search');
+const entries = Array.from(document.querySelectorAll('.entry'));
+const emptyState = document.getElementById('empty-state');
+search.addEventListener('input', () => {
+  const q = search.value.trim().toLowerCase();
+  let visible = 0;
+  entries.forEach(el => {
+    const hay = (el.dataset.terms + ' ' + el.textContent).toLowerCase();
+    const match = !q || hay.includes(q);
+    el.classList.toggle('hidden', !match);
+    if (match) visible++;
+  });
+  emptyState.style.display = visible === 0 ? 'block' : 'none';
+});
+</script>
+</body>
+</html>

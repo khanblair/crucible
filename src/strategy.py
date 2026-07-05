@@ -1,7 +1,11 @@
-"""Fixed strategy logic: indicators, signals, entries, exits.
+"""Fixed strategy logic: indicators and filters shared by every genome.
 
 Human-edited only. The automated workflow never modifies this file.
-Only the numeric boundaries passed in via `params` are optimizable.
+Entry-signal and exit-style logic that genome evolution can select between
+lives in src/modules/ instead — this file holds only what never varies:
+indicators, the 1h trend filter, intrabar-touch resolution, and parameter
+schema validation. Only the numeric boundaries in `params` are optimizable;
+which module runs is a `genome` choice, gated separately (see src/genome.py).
 """
 import pandas as pd
 
@@ -47,9 +51,9 @@ def adx(df: pd.DataFrame, period: int = 14) -> pd.Series:
     return dx.ewm(alpha=1 / period, adjust=False).mean()
 
 
-# ------------------------------------------------------------------- signals
 def h1_trend(df1h: pd.DataFrame, fixed: dict) -> pd.Series:
-    """+1 uptrend, -1 downtrend, 0 no clear direction, per 1-hour bar."""
+    """+1 uptrend, -1 downtrend, 0 no clear direction, per 1-hour bar.
+    Shared by every entry-signal module — the 1h trend filter never varies."""
     mid = ema(df1h["close"], fixed["h1_ema_mid"])
     slow = ema(df1h["close"], fixed["h1_ema_slow"])
     trend = pd.Series(0, index=df1h.index)
@@ -58,48 +62,26 @@ def h1_trend(df1h: pd.DataFrame, fixed: dict) -> pd.Series:
     return trend
 
 
-def generate_signals(df15: pd.DataFrame, df1h: pd.DataFrame,
-                     params: dict, fixed: dict) -> list[dict]:
-    """Scan 15m bars for entries confirmed by the 1h trend.
+def session_ok(t, fixed: dict) -> bool:
+    """London/New York session filter — shared by every entry-signal module."""
+    return fixed["session_start_hour_utc"] <= t.hour < fixed["session_end_hour_utc"]
 
-    Returns a list of signal dicts: time, direction, entry, stop, target, atr.
-    """
-    fast = ema(df15["close"], fixed["ema_fast"])
-    mid = ema(df15["close"], fixed["ema_mid"])
-    slow = ema(df15["close"], fixed["ema_slow"])
-    r = rsi(df15["close"], fixed["rsi_period"])
-    a = atr(df15, fixed["atr_period"])
-    # trend of the last completed 1h bar at or before each 15m bar
-    trend = h1_trend(df1h, fixed).reindex(df15.index, method="ffill").fillna(0)
 
-    buf = params["entry_buffer_pips"] * PIP
-    signals = []
-    warmup = max(fixed["h1_ema_slow"] // 4, fixed["ema_slow"], fixed["atr_period"]) + 1
-    for i in range(warmup, len(df15)):
-        t = df15.index[i]
-        if not (fixed["session_start_hour_utc"] <= t.hour < fixed["session_end_hour_utc"]):
-            continue
-        o, h, l, c = df15.iloc[i][["open", "high", "low", "close"]]
-        bar_atr = a.iloc[i]
-        if bar_atr <= 0 or abs(c - o) > params["max_body_atr"] * bar_atr:
-            continue  # candle quality: small body relative to volatility
-        aligned_up = fast.iloc[i] > mid.iloc[i] > slow.iloc[i]
-        aligned_dn = fast.iloc[i] < mid.iloc[i] < slow.iloc[i]
-        if aligned_up and trend.iloc[i] == 1 and l <= fast.iloc[i] and c > slow.iloc[i] \
-                and params["rsi_buy_low"] <= r.iloc[i] <= params["rsi_buy_high"]:
-            entry = h + buf
-            signals.append({"time": t, "direction": 1, "entry": entry,
-                            "stop": entry - params["atr_stop_mult"] * bar_atr,
-                            "target": entry + params["atr_target_mult"] * bar_atr,
-                            "atr": bar_atr})
-        elif aligned_dn and trend.iloc[i] == -1 and h >= fast.iloc[i] and c < slow.iloc[i] \
-                and params["rsi_sell_low"] <= r.iloc[i] <= params["rsi_sell_high"]:
-            entry = l - buf
-            signals.append({"time": t, "direction": -1, "entry": entry,
-                            "stop": entry + params["atr_stop_mult"] * bar_atr,
-                            "target": entry - params["atr_target_mult"] * bar_atr,
-                            "atr": bar_atr})
-    return signals
+def candle_quality_ok(o: float, c: float, bar_atr: float, params: dict) -> bool:
+    """Small body relative to volatility — shared by every entry-signal module."""
+    return bar_atr > 0 and abs(c - o) <= params["max_body_atr"] * bar_atr
+
+
+def resolve_first_touch(bar_time, direction: int, intrabar: dict) -> str:
+    """Which side of a bar was touched first. No tick record => worst case:
+    the stop-loss is assumed hit first. Never the favorable outcome.
+    Shared by every exit-style module that needs same-bar stop/target ordering."""
+    side = intrabar.get(bar_time)
+    if side is None:
+        return "stop"
+    if direction == 1:  # long: stop below (low), target above (high)
+        return "stop" if side == "low_first" else "target"
+    return "stop" if side == "high_first" else "target"
 
 
 REQUIRED_PARAM_KEYS = ("rsi_buy_low", "rsi_buy_high", "rsi_sell_low", "rsi_sell_high",

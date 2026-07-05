@@ -1,0 +1,37 @@
+name: pr_watch
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # every 15 minutes: cron timing isn't exact, hence the slack
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Ensure the reminder-tracking label exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create evolution-reminder-sent --color D29922 \
+            --description "One-time auto-merge reminder already posted" --force
+
+      - name: Remind at ~23.5h, auto-merge (CI-gated, branch deleted) at 24h
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: python -m src.evolve --watch-prs

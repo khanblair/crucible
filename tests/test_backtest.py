@@ -7,7 +7,7 @@ spelled out here so every expected value can be recomputed by hand.
 import pandas as pd
 import pytest
 
-from src.backtest import compute_metrics, simulate_trade
+from src.backtest import ROOT, compute_metrics, phase0_passed, simulate_trade
 
 SETTINGS = {
     "costs": {"spread_pips": 1.0, "slippage_pips": 0.2,
@@ -104,6 +104,29 @@ def test_triple_swap_on_wednesday_rollover_long():
     assert t["pnl_pips"] == pytest.approx(-53.2)
 
 
+def test_swap_scales_by_fraction_still_open_after_tp1():
+    """TP1 locks half the position before any rollover is crossed; three
+    rollovers (Mon, Tue, Wed-triple) are then crossed while only the half
+    remains open, before it stops out. Swap must scale to that 0.5 fraction:
+    0.5 * (-0.6 - 0.6 - 1.8) = -1.5, not the full-position -3.0."""
+    n = 400
+    idx = pd.date_range("2026-01-05 08:00", periods=n, freq="15min")  # Monday
+    df = pd.DataFrame(index=idx, columns=["open", "high", "low", "close"], dtype=float)
+    for i in range(n):
+        base = 1.1010 + i * 0.000005   # gentle uptrend so the trail never catches up early
+        df.iloc[i] = [base, base + 0.0004, base - 0.0004, base]
+    df.iloc[0] = [1.0995, 1.0999, 1.0990, 1.0996]
+    df.iloc[1] = [1.0995, 1.1005, 1.0993, 1.1002]   # fill @ 1.1000
+    df.iloc[2] = [1.1002, 1.1022, 1.1001, 1.1020]   # TP1 hit -> half locked, stop -> BE
+    wed = df.index[(df.index.weekday == 2) & (df.index.hour == 21) & (df.index.minute == 0)][0]
+    drop = df.index.get_loc(wed) + 6
+    b = df.iloc[drop]
+    df.iloc[drop] = [b["open"], b["high"], b["low"] - 0.01, b["close"]]  # force the remainder out
+
+    t = simulate_trade(df, 0, long_sig(df.index[0]), SETTINGS)
+    assert t["swap_pips"] == pytest.approx(-1.5)
+
+
 def test_single_swap_credit_short_non_wednesday():
     """Short held across Monday's rollover earns +0.2; stopped Tue morning:
     -50 - 1.0 - 0.4 + 0.2 = -51.2."""
@@ -131,3 +154,32 @@ def test_metrics_hand_computed():
     assert m["profit_factor"] == pytest.approx(5.0)
     # equity 1000 -> 1010 -> 1005 -> 1020; worst dip 5 from peak 1010
     assert m["max_drawdown"] == pytest.approx(5 / 1010, abs=1e-4)
+
+
+# ------------------------------------------------------------ phase0_passed
+def test_phase0_passed_true_on_pass_verdict(tmp_path, monkeypatch):
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "phase0_report.md").write_text("**Verdict: PASS**\n")
+    monkeypatch.setattr("src.backtest.ROOT", tmp_path)
+    assert phase0_passed() is True
+
+
+def test_phase0_passed_false_on_fail_verdict(tmp_path, monkeypatch):
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "phase0_report.md").write_text("**Verdict: FAIL**\n")
+    monkeypatch.setattr("src.backtest.ROOT", tmp_path)
+    assert phase0_passed() is False
+
+
+def test_phase0_passed_false_when_report_missing(tmp_path, monkeypatch):
+    (tmp_path / "docs").mkdir()
+    monkeypatch.setattr("src.backtest.ROOT", tmp_path)
+    assert phase0_passed() is False
+
+
+def test_current_repo_phase0_is_fail():
+    """Guards against accidentally shipping a stale PASS report: the real
+    docs/phase0_report.md in this repository must currently say FAIL, since
+    the optimization/evolution loops are gated on this exact check."""
+    report = (ROOT / "docs" / "phase0_report.md").read_text()
+    assert "**Verdict: FAIL**" in report

@@ -1,0 +1,60 @@
+name: evolve
+
+on:
+  workflow_dispatch:   # dispatched by optimize.yml's trigger check, never scheduled directly
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: crucible-runs
+  cancel-in-progress: false
+
+jobs:
+  evolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240   # generous: public-repo Actions minutes are free; GitHub's job cap is 360
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Refresh decision data (Dukascopy)
+        run: python -m src.data --refresh
+
+      - name: Ensure the crucible-evolution label exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create crucible-evolution --color 9F7AEA \
+            --description "Automated genome-evolution proposal" --force
+
+      - name: Screen-then-refine genome search, gate, open PR if it passes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          git config user.name "crucible-bot"
+          git config user.email "crucible-bot@users.noreply.github.com"
+          python -m src.evolve
+
+      - name: Alert on abnormal termination
+        if: failure()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          python - <<'PY'
+          import os, requests
+          hook = os.environ.get("DISCORD_WEBHOOK")
+          if hook:
+              requests.post(hook, json={"embeds": [{
+                  "title": "Crucible · genome evolution run FAILED",
+                  "description": "The run did not complete normally. No genome pull request was opened; the active structure is unchanged.",
+                  "color": 0xF85149}]}, timeout=30)
+          PY

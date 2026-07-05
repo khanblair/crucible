@@ -9,7 +9,8 @@ import pathlib
 
 import pandas as pd
 
-from src.strategy import PIP, generate_signals
+from src.genome import EXIT_STYLES, assemble
+from src.strategy import PIP
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 INTRABAR_PATH = ROOT / "data" / "intrabar" / "ordering.parquet"
@@ -27,30 +28,21 @@ def load_intrabar(path: pathlib.Path = INTRABAR_PATH) -> dict:
     return dict(zip(pd.to_datetime(df["time"]), df["first"]))
 
 
-def _first_touch(bar_time, direction: int, intrabar: dict) -> str:
-    """Which side of the bar was touched first. No tick record => worst case:
-    the stop-loss is assumed to have been hit first. Never the favorable outcome."""
-    side = intrabar.get(bar_time)
-    if side is None:
-        return "stop"
-    if direction == 1:  # long: stop below (low), target above (high)
-        return "stop" if side == "low_first" else "target"
-    return "stop" if side == "high_first" else "target"
-
-
-def simulate_trade(df15: pd.DataFrame, signal_idx: int, sig: dict,
-                   settings: dict, intrabar: dict | None = None) -> dict | None:
+def simulate_trade(df15: pd.DataFrame, signal_idx: int, sig: dict, settings: dict,
+                   intrabar: dict | None = None, exit_style: str = "atr_trail_half") -> dict | None:
     """Simulate one signal bar-by-bar. Returns a trade dict or None if never filled.
 
     Cost model (all net, in pips): round-trip spread once per trade, adverse
     slippage on entry and on every stop-loss exit (scaled by exited fraction),
-    swap per rollover crossed (triple on the configured weekday).
+    swap per rollover crossed (triple on the configured weekday). Trade
+    *management* — when and how the position closes — is delegated to the
+    chosen exit-style module; cost application here never changes per genome.
     """
     costs = settings["costs"]
     fixed = settings["strategy_fixed"]
     intrabar = intrabar or {}
     d = sig["direction"]
-    entry, stop, target = sig["entry"], sig["stop"], sig["target"]
+    entry = sig["entry"]
 
     fill_idx = None
     for j in range(signal_idx + 1, min(signal_idx + 1 + fixed["entry_valid_bars"], len(df15))):
@@ -61,56 +53,25 @@ def simulate_trade(df15: pd.DataFrame, signal_idx: int, sig: dict,
     if fill_idx is None:
         return None
 
-    legs = []                       # (exit_price, fraction, stop_exit?)
-    swap_pips = 0.0
-    fraction_open, phase, be = 1.0, 1, entry
-    exit_idx = fill_idx
+    legs = EXIT_STYLES[exit_style](df15, fill_idx, sig, settings, intrabar)
+    fraction_open = 1.0 - sum(frac for _, frac, _, _ in legs)
+    if fraction_open > 1e-9:  # end of data: mark remainder out at last close
+        legs = legs + [(df15["close"].iloc[-1], fraction_open, False, len(df15) - 1)]
+    exit_idx = legs[-1][3]
 
-    for j in range(fill_idx, len(df15)):
-        bar = df15.iloc[j]
-        t = df15.index[j]
-        if j > fill_idx and t.hour == costs["rollover_hour_utc"] and t.minute == 0:
-            rate = costs["swap_long_pips_per_day"] if d == 1 else costs["swap_short_pips_per_day"]
-            mult = 3.0 if t.weekday() == costs["triple_swap_weekday"] else 1.0
-            swap_pips += rate * mult * fraction_open
-        if phase == 1:
-            stop_hit = bar["low"] <= stop if d == 1 else bar["high"] >= stop
-            tp_hit = bar["high"] >= target if d == 1 else bar["low"] <= target
-            if stop_hit and tp_hit:
-                first = _first_touch(t, d, intrabar)
-            elif stop_hit:
-                first = "stop"
-            elif tp_hit:
-                first = "target"
-            else:
-                continue
-            if first == "stop":
-                legs.append((stop, fraction_open, True))
-                fraction_open, exit_idx = 0.0, j
-                break
-            legs.append((target, 0.5, False))   # TP1: lock half, stop to breakeven
-            fraction_open, stop, phase = 0.5, be, 2
-            be_hit = bar["low"] <= stop if d == 1 else bar["high"] >= stop
-            if be_hit:                          # conservative: BE also hit in-bar
-                legs.append((stop, fraction_open, True))
-                fraction_open, exit_idx = 0.0, j
-                break
-        else:  # phase 2: trail the remainder on recent candle extremes
-            lo = max(0, j - fixed["trail_lookback"])
-            trail = (max(stop, df15["low"].iloc[lo:j].min()) if d == 1
-                     else min(stop, df15["high"].iloc[lo:j].max()))
-            stop = trail
-            if (d == 1 and bar["low"] <= stop) or (d == -1 and bar["high"] >= stop):
-                legs.append((stop, fraction_open, True))
-                fraction_open, exit_idx = 0.0, j
-                break
+    rate = costs["swap_long_pips_per_day"] if d == 1 else costs["swap_short_pips_per_day"]
+    swap_pips, remaining, prev_idx = 0.0, 1.0, fill_idx
+    for _, frac, _, leg_idx in legs:
+        for j in range(prev_idx + 1, leg_idx + 1):
+            t = df15.index[j]
+            if t.hour == costs["rollover_hour_utc"] and t.minute == 0:
+                mult = 3.0 if t.weekday() == costs["triple_swap_weekday"] else 1.0
+                swap_pips += rate * mult * remaining  # scaled by whatever fraction is still open
+        remaining -= frac
+        prev_idx = leg_idx
 
-    if fraction_open > 0:  # end of data: mark out at last close
-        legs.append((df15["close"].iloc[-1], fraction_open, False))
-        exit_idx = len(df15) - 1
-
-    gross = sum(d * (px - entry) / PIP * frac for px, frac, _ in legs)
-    slip = costs["slippage_pips"] * (1.0 + sum(frac for _, frac, is_stop in legs if is_stop))
+    gross = sum(d * (px - entry) / PIP * frac for px, frac, _, _ in legs)
+    slip = costs["slippage_pips"] * (1.0 + sum(frac for _, frac, is_stop, _ in legs if is_stop))
     net = gross - costs["spread_pips"] - slip + swap_pips
     return {"time": str(sig["time"]), "direction": d, "entry": entry,
             "fill_time": str(df15.index[fill_idx]), "exit_time": str(df15.index[exit_idx]),
@@ -141,12 +102,15 @@ def compute_metrics(trades: list[dict], settings: dict) -> dict:
             "max_drawdown": round(max_dd, 4), "equity_curve": [round(e, 2) for e in equity]}
 
 
-def run_backtest(df15: pd.DataFrame, df1h: pd.DataFrame, params: dict,
-                 settings: dict, intrabar: dict | None = None,
-                 allowed_dates: set | None = None) -> dict:
-    """Full backtest of the fixed strategy with the given parameters.
+def run_backtest(df15: pd.DataFrame, df1h: pd.DataFrame, params: dict, settings: dict,
+                 intrabar: dict | None = None, allowed_dates: set | None = None,
+                 genome: dict | None = None) -> dict:
+    """Full backtest of a strategy genome with the given parameters. `genome`
+    defaults to the baseline structure (today's exact behavior) when omitted.
     One position at a time; signals during an open trade are skipped."""
-    signals = generate_signals(df15, df1h, params, settings["strategy_fixed"])
+    entry_fn, exit_fn = assemble(genome)
+    exit_style = (genome or {}).get("exit_style", "atr_trail_half")
+    signals = entry_fn(df15, df1h, params, settings["strategy_fixed"])
     if allowed_dates is not None:
         signals = [s for s in signals if s["time"].date() in allowed_dates]
     idx = {t: i for i, t in enumerate(df15.index)}
@@ -154,12 +118,23 @@ def run_backtest(df15: pd.DataFrame, df1h: pd.DataFrame, params: dict,
     for sig in signals:
         if busy_until is not None and sig["time"] <= busy_until:
             continue
-        trade = simulate_trade(df15, idx[sig["time"]], sig, settings, intrabar)
+        trade = simulate_trade(df15, idx[sig["time"]], sig, settings, intrabar, exit_style)
         if trade:
             trades.append(trade)
             busy_until = pd.Timestamp(trade["exit_time"])
     metrics = compute_metrics(trades, settings)
     return {"metrics": metrics, "trades": trades}
+
+
+def phase0_passed() -> bool:
+    """Code-level backstop: the optimization and evolution loops must never
+    run against a strategy that hasn't proven it has an edge, regardless of
+    whether the workflows happen to be enabled. Manual GitHub Actions toggles
+    are the primary control; this is the defense-in-depth check underneath."""
+    report = ROOT / "docs" / "phase0_report.md"
+    if not report.exists():
+        return False
+    return "**Verdict: PASS**" in report.read_text()
 
 
 def _phase0() -> None:

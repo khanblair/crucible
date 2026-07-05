@@ -46,16 +46,22 @@ def gate_consistency(test_net: float, train_net: float, max_dropoff: float) -> b
     return test_net >= train_net * (1.0 - max_dropoff)
 
 
-def evaluate_candidate(candidate_oos: dict, baseline_oos: dict,
-                       candidate_train: dict, settings: dict) -> dict:
-    """Run every gate. Returns {accepted, gates: [{name, passed, detail}]}."""
+def evaluate_candidate(candidate_oos: dict, baseline_oos: dict, candidate_train: dict,
+                       settings: dict, min_relative_improvement: float | None = None) -> dict:
+    """Run every gate. Returns {accepted, gates: [{name, passed, detail}]}.
+
+    `min_relative_improvement` overrides the normal parameter-change threshold
+    — evolve.py passes the stricter `structural_min_relative_improvement` for
+    genome candidates, since changing logic is a bigger commitment than
+    tuning a number."""
     g = settings["gates"]
+    threshold = g["min_relative_improvement"] if min_relative_improvement is None \
+        else min_relative_improvement
     gates = [
         ("improvement", gate_improvement(candidate_oos["net_profit_pips"],
-                                         baseline_oos["net_profit_pips"],
-                                         g["min_relative_improvement"]),
+                                         baseline_oos["net_profit_pips"], threshold),
          f"candidate {candidate_oos['net_profit_pips']} vs baseline "
-         f"{baseline_oos['net_profit_pips']} (+{g['min_relative_improvement']:.0%} required)"),
+         f"{baseline_oos['net_profit_pips']} (+{threshold:.0%} required)"),
         ("trade_floor", gate_trades(candidate_oos["n_trades"], g["min_oos_trades"]),
          f"{candidate_oos['n_trades']} trades (floor {g['min_oos_trades']})"),
         ("drawdown_ceiling", gate_drawdown(candidate_oos["max_drawdown"], g["max_drawdown"]),
@@ -90,12 +96,19 @@ def cooldown_clear(settings: dict, today: dt.date | None = None) -> bool:
 
 def champion_check(df15, df1h, settings: dict, intrabar: dict) -> dict:
     """Replay Champion Zero vs the evolved system over accumulated data —
-    system-versus-system, under identical execution costs."""
+    system-versus-system, under identical execution costs. Each side runs
+    under its own genome: Champion Zero's is frozen forever; the evolved
+    system's may differ after a genome-evolution PR merges."""
+    from src.genome import load_genome
     champion = json.loads((ROOT / "config" / "champion_zero.json").read_text())
     active = json.loads((ROOT / "config" / "active.json").read_text())
     evolved = json.loads((ROOT / active["params_file"]).read_text())
-    zero = run_backtest(df15, df1h, champion["params"], settings, intrabar)
-    curr = run_backtest(df15, df1h, evolved["params"], settings, intrabar)
+    champion_genome = load_genome(champion["genome"])
+    evolved_genome = load_genome(evolved.get("genome", champion["genome"]))
+    zero = run_backtest(df15, df1h, champion["params"], settings, intrabar,
+                        genome=champion_genome)
+    curr = run_backtest(df15, df1h, evolved["params"], settings, intrabar,
+                        genome=evolved_genome)
 
     def trailing_net(trades: list[dict], days: int) -> float:
         cutoff = df15.index[-1] - pd.Timedelta(days=days)
@@ -133,9 +146,13 @@ def _main() -> None:
     oos_end = pd.Timestamp(cand["oos_end"])
     m15 = df15[(df15.index >= oos_start) & (df15.index <= oos_end)]
     m1h = df1h[df1h.index <= oos_end]
+    from src.genome import load_genome
     baseline_params = json.loads((ROOT / cand["baseline_file"]).read_text())["params"]
-    cand_oos = run_backtest(m15, m1h, cand["params"], settings, intrabar)["metrics"]
-    base_oos = run_backtest(m15, m1h, baseline_params, settings, intrabar)["metrics"]
+    genome_def = load_genome(cand["genome"])
+    cand_oos = run_backtest(m15, m1h, cand["params"], settings, intrabar,
+                            genome=genome_def)["metrics"]
+    base_oos = run_backtest(m15, m1h, baseline_params, settings, intrabar,
+                            genome=genome_def)["metrics"]
     verdict = evaluate_candidate(cand_oos, base_oos, cand["train_metrics"], settings)
     champion = champion_check(df15, df1h, settings, intrabar)
     from src.forward import acceptance_paused
@@ -160,8 +177,11 @@ def _main() -> None:
     candidates[-1].write_text(json.dumps(cand, indent=2) + "\n")
     if decision["accepted"]:
         regime_file = ROOT / "config" / "regimes" / f"{cand['regime']}.json"
+        # `genome` is preserved as-is: this write path only ever updates `params`
+        # (direct commit); changing `genome` itself requires a pull request (evolve.py).
         regime_file.write_text(json.dumps({
-            "name": cand["regime"], "last_validated": dt.date.today().isoformat(),
+            "name": cand["regime"], "genome": cand["genome"],
+            "last_validated": dt.date.today().isoformat(),
             "validated_by": f"optimization {dt.date.today().isoformat()}",
             "params": cand["params"]}, indent=2) + "\n")
         active = json.loads((ROOT / "config" / "active.json").read_text())

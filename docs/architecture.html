@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crucible — Architecture Mind Map</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  #diagram { width:100%; height:auto; display:block; }
+  .band-label { fill:var(--dim); font:600 13px/1 -apple-system,sans-serif; text-transform:uppercase;
+                letter-spacing:.06em; }
+  .box-title { fill:var(--text); font:600 15px/1.2 -apple-system,sans-serif; }
+  .box-desc { fill:var(--dim); font:12px/1.4 -apple-system,sans-serif; }
+  .box { fill:var(--card); stroke:#2d333b; stroke-width:1.5; rx:8; }
+  .box.accent-blue { stroke:var(--blue); }
+  .box.accent-purple { stroke:var(--purple); }
+  .box.accent-amber { stroke:var(--amber); }
+  .box.accent-green { stroke:var(--green); }
+  .flow-line { stroke:#3a4048; stroke-width:2; fill:none; }
+  .flow-line.dashed { stroke-dasharray:5 4; stroke:var(--purple); }
+  .flow-line.dashed-amber { stroke-dasharray:5 4; stroke:var(--amber); }
+  .edge-label { fill:var(--dim); font:11px/1 -apple-system,sans-serif; font-style:italic; }
+  #legend-note { margin-top:1rem; }
+</style>
+</head>
+<body>
+<nav class="sitenav">
+  <span class="brand">Crucible</span>
+  <a href="index.html">Dashboard</a>
+  <a href="architecture.html" class="active">Architecture</a>
+  <a href="knowledge-base.html">Knowledge Base</a>
+</nav>
+<h1>Crucible <span>· architecture mind map</span></h1>
+<p class="dim">How data becomes a decision. Every box is a real file or workflow in the
+repository — click a name in the <a href="knowledge-base.html">Knowledge Base</a> to read
+more about any term here.</p>
+
+<svg id="diagram" viewBox="0 0 1000 1300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3a4048"/>
+    </marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--purple)"/>
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--amber)"/>
+    </marker>
+  </defs>
+
+  <!-- 1. Data sources -->
+  <text x="20" y="24" class="band-label">1 · Data Sources</text>
+  <rect x="80" y="34" width="330" height="70" class="box"/>
+  <text x="245" y="60" text-anchor="middle" class="box-title">Dukascopy</text>
+  <text x="245" y="80" text-anchor="middle" class="box-desc">decision data — every backtest, gate, and log</text>
+  <rect x="590" y="34" width="330" height="70" class="box"/>
+  <text x="755" y="60" text-anchor="middle" class="box-title">Twelve Data</text>
+  <text x="755" y="80" text-anchor="middle" class="box-desc">context only — display, never a decision</text>
+
+  <path class="flow-line" d="M245,104 L245,134 L500,134" marker-end="url(#arrow)"/>
+  <path class="flow-line" d="M755,104 L755,150" marker-end="url(#arrow)"/>
+
+  <!-- 2. Config -->
+  <text x="20" y="150" class="band-label">2 · Configuration (the source of truth)</text>
+  <rect x="20" y="160" width="220" height="80" class="box accent-green"/>
+  <text x="130" y="188" text-anchor="middle" class="box-title">Champion Zero</text>
+  <text x="130" y="206" text-anchor="middle" class="box-desc">frozen genome + params</text>
+  <text x="130" y="222" text-anchor="middle" class="box-desc">never modified, ever</text>
+
+  <rect x="270" y="160" width="220" height="80" class="box"/>
+  <text x="380" y="188" text-anchor="middle" class="box-title">Regime files</text>
+  <text x="380" y="206" text-anchor="middle" class="box-desc">params: bot writes directly</text>
+  <text x="380" y="222" text-anchor="middle" class="box-desc">genome: pull request only</text>
+
+  <rect x="520" y="160" width="220" height="80" class="box"/>
+  <text x="630" y="188" text-anchor="middle" class="box-title">active.json</text>
+  <text x="630" y="206" text-anchor="middle" class="box-desc">pointer: which regime set</text>
+  <text x="630" y="222" text-anchor="middle" class="box-desc">is live right now</text>
+
+  <rect x="770" y="160" width="210" height="80" class="box"/>
+  <text x="875" y="188" text-anchor="middle" class="box-title">Genome menu</text>
+  <text x="875" y="206" text-anchor="middle" class="box-desc">config/genomes/*.json</text>
+  <text x="875" y="222" text-anchor="middle" class="box-desc">curated structures</text>
+
+  <path class="flow-line" d="M500,260 L500,290" marker-end="url(#arrow)"/>
+
+  <!-- 3. Strategy + genome -->
+  <text x="20" y="290" class="band-label">3 · Strategy + Genome (src/strategy.py, src/genome.py, src/modules/)</text>
+  <rect x="150" y="300" width="700" height="90" class="box"/>
+  <text x="500" y="330" text-anchor="middle" class="box-title">Fixed filters + swappable modules</text>
+  <text x="500" y="350" text-anchor="middle" class="box-desc">Fixed: session window, candle quality, RSI band, 1h trend confirmation</text>
+  <text x="500" y="368" text-anchor="middle" class="box-desc">Swappable per genome: entry signal (ema_pullback / breakout / mean_reversion),</text>
+  <text x="500" y="384" text-anchor="middle" class="box-desc">exit style (atr_trail_half / fixed_r_multiple)</text>
+
+  <path class="flow-line" d="M500,390 L500,420" marker-end="url(#arrow)"/>
+
+  <!-- 4. Harness -->
+  <text x="20" y="420" class="band-label">4 · Backtest Harness — the one shared engine (src/backtest.py)</text>
+  <rect x="200" y="430" width="600" height="80" class="box accent-blue"/>
+  <text x="500" y="458" text-anchor="middle" class="box-title">Costs · Intrabar Ordering · Metrics</text>
+  <text x="500" y="478" text-anchor="middle" class="box-desc">Spread, slippage, swap, worst-case intrabar fallback — every consumer</text>
+  <text x="500" y="494" text-anchor="middle" class="box-desc">below calls into this ONE implementation. Zero drift between them.</text>
+
+  <path class="flow-line" d="M340,510 L340,540" marker-end="url(#arrow)"/>
+  <path class="flow-line" d="M500,510 L500,540" marker-end="url(#arrow)"/>
+  <path class="flow-line" d="M660,510 L660,540" marker-end="url(#arrow)"/>
+
+  <!-- 5. Consumers -->
+  <text x="20" y="550" class="band-label">5 · Three Consumers</text>
+  <rect x="60" y="560" width="280" height="90" class="box"/>
+  <text x="200" y="588" text-anchor="middle" class="box-title">Optimize</text>
+  <text x="200" y="608" text-anchor="middle" class="box-desc">Optuna search over the 6 params,</text>
+  <text x="200" y="624" text-anchor="middle" class="box-desc">within the currently active genome</text>
+  <text x="200" y="640" text-anchor="middle" class="box-desc">— weekly, on the training window</text>
+
+  <rect x="360" y="560" width="280" height="90" class="box"/>
+  <text x="500" y="588" text-anchor="middle" class="box-title">Evaluate</text>
+  <text x="500" y="608" text-anchor="middle" class="box-desc">The gate. Every accept/reject check,</text>
+  <text x="500" y="624" text-anchor="middle" class="box-desc">out-of-sample, same feed, one failure</text>
+  <text x="500" y="640" text-anchor="middle" class="box-desc">discards the whole candidate</text>
+
+  <rect x="660" y="560" width="280" height="90" class="box"/>
+  <text x="800" y="588" text-anchor="middle" class="box-title">Forward</text>
+  <text x="800" y="608" text-anchor="middle" class="box-desc">Paper-forward signal log — no real</text>
+  <text x="800" y="624" text-anchor="middle" class="box-desc">orders, ever. Catches when the</text>
+  <text x="800" y="640" text-anchor="middle" class="box-desc">backtest stops predicting reality</text>
+
+  <path class="flow-line dashed" d="M200,650 C200,700 200,700 500,700" marker-end="url(#arrow-purple)"/>
+  <text x="330" y="694" class="edge-label" text-anchor="middle">losing streak + stuck optimizer</text>
+
+  <!-- 6. Genome evolution -->
+  <text x="20" y="720" class="band-label">6 · Genome Evolution — triggered, not scheduled (src/evolve.py)</text>
+  <rect x="200" y="730" width="600" height="90" class="box accent-purple"/>
+  <text x="500" y="758" text-anchor="middle" class="box-title">Screen → Refine → Stricter Gate</text>
+  <text x="500" y="778" text-anchor="middle" class="box-desc">Every genome screened cheaply, top-3 get a full Optuna search,</text>
+  <text x="500" y="794" text-anchor="middle" class="box-desc">winner must beat baseline by 20% AND beat Champion Zero outright</text>
+  <text x="500" y="810" text-anchor="middle" class="box-desc">— a bigger commitment gets a higher bar</text>
+
+  <path class="flow-line dashed" d="M500,820 L500,850" marker-end="url(#arrow-purple)"/>
+
+  <!-- 7. PR review -->
+  <text x="20" y="860" class="band-label">7 · Human-or-Timeout Review</text>
+  <rect x="250" y="870" width="500" height="90" class="box accent-amber"/>
+  <text x="500" y="898" text-anchor="middle" class="box-title">Pull Request · 24-Hour Window</text>
+  <text x="500" y="918" text-anchor="middle" class="box-desc">Evidence-backed PR opens, Discord pings immediately.</text>
+  <text x="500" y="934" text-anchor="middle" class="box-desc">Reminder at ~23.5h. Auto-merges at 24h if CI is green</text>
+  <text x="500" y="950" text-anchor="middle" class="box-desc">and no one has acted — branch deleted either way</text>
+
+  <path class="flow-line" d="M500,960 L500,1000" marker-end="url(#arrow)"/>
+
+  <!-- 8. Reporting -->
+  <text x="20" y="1010" class="band-label">8 · Reporting</text>
+  <rect x="60" y="1020" width="280" height="80" class="box"/>
+  <text x="200" y="1048" text-anchor="middle" class="box-title">DeepSeek</text>
+  <text x="200" y="1068" text-anchor="middle" class="box-desc">prose only — no decision role, ever</text>
+
+  <rect x="360" y="1020" width="280" height="80" class="box"/>
+  <text x="500" y="1048" text-anchor="middle" class="box-title">Discord</text>
+  <text x="500" y="1068" text-anchor="middle" class="box-desc">every run, plain-English + technical</text>
+
+  <rect x="660" y="1020" width="280" height="80" class="box"/>
+  <text x="800" y="1048" text-anchor="middle" class="box-title">GitHub Pages</text>
+  <text x="800" y="1068" text-anchor="middle" class="box-desc">this dashboard, rebuilt every run</text>
+
+  <path class="flow-line" d="M500,1100 L500,1130" marker-end="url(#arrow)"/>
+
+  <!-- 9. Workflows -->
+  <text x="20" y="1140" class="band-label">9 · Scheduled by GitHub Actions</text>
+  <rect x="20" y="1150" width="180" height="70" class="box"/>
+  <text x="110" y="1178" text-anchor="middle" class="box-title" style="font-size:13px">monitor.yml</text>
+  <text x="110" y="1196" text-anchor="middle" class="box-desc">daily, ≤10 min</text>
+
+  <rect x="215" y="1150" width="180" height="70" class="box"/>
+  <text x="305" y="1178" text-anchor="middle" class="box-title" style="font-size:13px">optimize.yml</text>
+  <text x="305" y="1196" text-anchor="middle" class="box-desc">weekly, ≤60 min</text>
+
+  <rect x="410" y="1150" width="180" height="70" class="box accent-purple"/>
+  <text x="500" y="1178" text-anchor="middle" class="box-title" style="font-size:13px">evolve.yml</text>
+  <text x="500" y="1196" text-anchor="middle" class="box-desc">triggered, ≤4 hrs</text>
+
+  <rect x="605" y="1150" width="180" height="70" class="box accent-amber"/>
+  <text x="695" y="1178" text-anchor="middle" class="box-title" style="font-size:13px">pr_watch.yml</text>
+  <text x="695" y="1196" text-anchor="middle" class="box-desc">every 15 min</text>
+
+  <rect x="800" y="1150" width="180" height="70" class="box"/>
+  <text x="890" y="1178" text-anchor="middle" class="box-title" style="font-size:13px">ci.yml</text>
+  <text x="890" y="1196" text-anchor="middle" class="box-desc">every PR + push</text>
+</svg>
+
+<div id="legend-note" class="dim">
+  <p><span style="color:var(--green)">■</span> frozen / never automated &nbsp;
+     <span style="color:var(--blue)">■</span> shared engine &nbsp;
+     <span style="color:var(--purple)">■</span> genome evolution path &nbsp;
+     <span style="color:var(--amber)">■</span> human-or-timeout review</p>
+</div>
+</body>
+</html>
