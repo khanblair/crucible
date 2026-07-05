@@ -93,7 +93,8 @@ def refresh(years_back: int = 3) -> None:
               f"{', '.join(failed[:10])}{'…' if len(failed) > 10 else ''}")
     if len(failed) > max(total // 10, 3):
         raise RuntimeError("too many failed days — feed unhealthy, aborting refresh")
-    fresh = pd.concat([f for f in frames if not f.empty]) if frames else pd.DataFrame()
+    non_empty = [f for f in frames if not f.empty]
+    fresh = pd.concat(non_empty) if non_empty else pd.DataFrame()
     if fresh.empty:
         print("no new Dukascopy data")
         return
