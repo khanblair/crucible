@@ -2,14 +2,19 @@ name: monitor
 
 on:
   schedule:
-    - cron: "30 21 * * 1-5"   # weekdays after NY close
+    # Every 8 hours, aligned to 00:00 / 08:00 / 16:00 EAT (East Africa Time,
+    # UTC+3 fixed — no daylight saving, so this never drifts). EAT 00:00 is
+    # UTC 21:00 the previous day; 08:00/16:00 EAT are UTC 05:00/13:00.
+    # No weekday filter: forex is closed Sat/Sun anyway, and the refresh
+    # logic already treats a quiet weekend as a normal no-op, not a failure.
+    - cron: "0 21,5,13 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: crucible-runs        # never overlap with the optimization run
+  group: crucible-runs        # never overlap with the optimization/evolve runs
   cancel-in-progress: false
 
 jobs:
@@ -26,7 +31,7 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - name: Daily monitoring run
+      - name: Monitoring run
         env:
           TWELVE_DATA_KEY: ${{ secrets.TWELVE_DATA_KEY }}
           DEEPSEEK_KEY: ${{ secrets.DEEPSEEK_KEY }}
@@ -36,7 +41,11 @@ jobs:
           python -m src.data --context
           python -m src.regime --apply
           python -m src.forward --log
-          if [ "$(date -u +%d)" -le 7 ] && [ "$(date -u +%u)" = "1" ]; then
+          # Monthly checks: first Monday of the month (UTC calendar day —
+          # EAT 00:00 falls on the PREVIOUS UTC day, so this is checked at
+          # the 05:00 UTC slot specifically, the one slot guaranteed to fire
+          # exactly once per UTC calendar day rather than three times).
+          if [ "$(date -u +%d)" -le 7 ] && [ "$(date -u +%u)" = "1" ] && [ "$(date -u +%H)" = "05" ]; then
             python -m src.forward --divergence
             python -m src.data --reconcile
           fi
@@ -47,5 +56,5 @@ jobs:
           git config user.name "crucible-bot"
           git config user.email "crucible-bot@users.noreply.github.com"
           git add data/candles results docs config/active.json
-          git diff --cached --quiet || git commit -m "monitor: daily run $(date -u +%F)"
+          git diff --cached --quiet || git commit -m "monitor: run $(date -u +'%F %H:%M') UTC"
           git push

@@ -18,6 +18,7 @@
 </nav>
 <h1>Crucible <span>· EUR/USD strategy perfection engine</span></h1>
 <p class="dim" id="generated"></p>
+<div id="staleness-banner"></div>
 <div class="tiles" id="tiles"></div>
 <div class="grid">
   <div class="card wide" style="border-left:3px solid var(--blue)"><h2>In plain English</h2>
@@ -69,6 +70,16 @@ if (!DATA) {
   document.body.innerHTML += '<p class="dim">No run data yet — the dashboard is rebuilt automatically after each run.</p>';
 } else {
   $('generated').textContent = 'Generated ' + DATA.generated;
+
+  const fresh = DATA.data_freshness;
+  const staleDays = fresh ? (fresh.stale_trading_days || 0) : 0;
+  if (staleDays > 0) {
+    const note = fresh.fallback_used ? ' A backup data source was used to bridge part of the gap.' : '';
+    $('staleness-banner').innerHTML = `<div class="card" style="border-left:3px solid var(--amber); margin-bottom:1rem">
+      <span class="warn" style="font-weight:600">⚠ Data is ${staleDays} trading day(s) stale</span>
+      <span class="dim"> — last real market data: ${fresh.new_last_date || 'unknown'}. Reports may look ` +
+      `similar to previous ones until fresh data arrives.${note}</span></div>`;
+  }
 
   const f = DATA.forward || {};
   const price = DATA.price;

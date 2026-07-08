@@ -14,6 +14,15 @@ import requests
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 RUNS = ROOT / "results" / "runs"
 
+# East Africa Time — fixed UTC+3, no daylight saving, so this never drifts.
+# All internal date/time logic (windows, cooldowns, regime classification)
+# stays UTC; only human-facing display timestamps convert to EAT.
+EAT = dt.timezone(dt.timedelta(hours=3))
+
+
+def now_eat() -> dt.datetime:
+    return dt.datetime.now(EAT)
+
 DEEPSEEK_SYSTEM_PROMPT = """\
 You are the report writer for Crucible, an autonomous EUR/USD trading-strategy
 optimization engine. Crucible runs backtests on historical data, searches for
@@ -91,13 +100,28 @@ def discord_notify(title: str, description: str, fields: list[dict],
         return
     embed = {"title": title, "description": description[:4000], "color": color,
              "fields": fields[:25],
-             "footer": {"text": f"Crucible · {dt.datetime.now(dt.timezone.utc):%Y-%m-%d %H:%M} UTC"}}
+             "footer": {"text": f"Crucible · {now_eat():%Y-%m-%d %H:%M} EAT"}}
     requests.post(webhook, json={"embeds": [embed]}, timeout=30).raise_for_status()
 
 
 def _latest(pattern: str) -> dict | None:
     files = sorted(RUNS.glob(pattern))
     return json.loads(files[-1].read_text()) if files else None
+
+
+def _data_freshness_field() -> dict | None:
+    """A Discord field flagging stale market data, or None when current.
+    Never silent: a stale-but-unremarked report is exactly what let three
+    days of identical results pass as if they were fresh daily analysis."""
+    refresh_log = _latest("refresh_*.json")
+    stale_days = (refresh_log or {}).get("stale_trading_days") or 0
+    if stale_days <= 0:
+        return None
+    note = " (Twelve Data fallback used)" if refresh_log.get("fallback_used") else ""
+    return {"name": "⚠ Data freshness",
+           "value": f"{stale_days} trading day(s) stale — last real data: "
+                    f"{refresh_log.get('new_last_date', 'unknown')}{note}",
+           "inline": False}
 
 
 # ------------------------------------------------- plain-English reporting
@@ -148,6 +172,16 @@ def plain_summary(settings: dict, decision: dict | None = None) -> str:
     """Non-technical summary anyone can read. No jargon, no invented numbers,
     and no promises — practice results at the recent pace, clearly labeled."""
     parts = []
+    staleness = _latest("refresh_*.json")
+    stale_days = (staleness or {}).get("stale_trading_days") or 0
+    if stale_days > 0:
+        source_note = (" A backup data source was used to fill part of the gap."
+                       if staleness.get("fallback_used") else "")
+        parts.append(
+            f"Heads up: the market data behind this report is {stale_days} trading "
+            f"day(s) behind schedule — the main data provider hasn't published newer "
+            f"prices yet, so today's numbers may look a lot like the last report."
+            f"{source_note}")
     if decision:
         base = _usd(decision["baseline_oos"]["net_profit_pips"], settings)
         cand = _usd(decision["candidate_oos"]["net_profit_pips"], settings)
@@ -299,10 +333,11 @@ def build_dashboard() -> None:
             "pr_auto_merge_hours": settings["evolution"]["pr_auto_merge_hours"],
         }
 
-    data = {"generated": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+    data = {"generated": now_eat().strftime("%Y-%m-%d %H:%M") + " EAT",
             "active": active, "regime": regime_log, "changes": changes,
             "divergence": divergence[-12:], "price": price, "forward": forward,
             "regime_history": regime_history[-30:], "evolution": evolution,
+            "data_freshness": _latest("refresh_*.json"),
             "plain": {"text": plain_summary(settings, decision),
                       "money": _forward_money(settings),
                       "lot_size": settings["reporting"]["lot_size"]},
@@ -326,6 +361,9 @@ def daily_report() -> None:
               {"name": "Decay trigger", "value": str(decay["decay_trigger"]), "inline": True}]
     if regime_log.get("swapped"):
         fields.append({"name": "Regime swap", "value": "active.json switched (routing)", "inline": False})
+    freshness = _data_freshness_field()
+    if freshness:
+        fields.append(freshness)
     fields.append({"name": "In plain English",
                    "value": plain_summary(settings)[:1024], "inline": False})
     color = 0xC53030 if decay["decay_trigger"] else 0x2F855A
@@ -353,11 +391,14 @@ def optimization_report() -> None:
          "value": f"evolved {'leads' if champ['evolved_leads'] else 'TRAILS'} "
                   f"({champ['evolved']['net_profit_pips']} vs "
                   f"{champ['champion_zero']['net_profit_pips']} pips)", "inline": False},
-        {"name": "Next run", "value": "Tomorrow 22:00 UTC (weekdays, daily cadence)", "inline": True},
+        {"name": "Next run", "value": "In ~8 hours (00:00 / 08:00 / 16:00 EAT)", "inline": True},
     ]
     if champ.get("warning_90d"):
         fields.append({"name": "⚠ Champion warning",
                        "value": "evolved system trails Champion Zero over 90 days", "inline": False})
+    freshness = _data_freshness_field()
+    if freshness:
+        fields.append(freshness)
     from src.backtest import load_settings
     fields.append({"name": "In plain English",
                    "value": plain_summary(load_settings(), decision)[:1024], "inline": False})

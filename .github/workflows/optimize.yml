@@ -2,7 +2,11 @@ name: optimize
 
 on:
   schedule:
-    - cron: "0 22 * * 1-5"    # daily, weekdays, 30 min after monitor's daily update
+    # Every 8 hours, 30 min after monitor's own 00:00/08:00/16:00 EAT slots
+    # (see monitor.yml for the UTC-conversion note) — same cadence, offset so
+    # the two rarely land on the exact same minute. The shared concurrency
+    # group below serializes them regardless if they do overlap.
+    - cron: "30 21,5,13 * * *"
   workflow_dispatch:           # decay triggers schedule a manual dispatch
 
 permissions:
@@ -47,7 +51,7 @@ jobs:
           git config user.name "crucible-bot"
           git config user.email "crucible-bot@users.noreply.github.com"
           git add config/regimes config/active.json data/candles results docs
-          git diff --cached --quiet || git commit -m "optimize: daily run $(date -u +%F)"
+          git diff --cached --quiet || git commit -m "optimize: run $(date -u +'%F %H:%M') UTC"
           git push
 
       - name: Check genome-evolution trigger
