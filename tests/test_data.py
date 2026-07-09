@@ -206,6 +206,30 @@ def test_fetch_twelve_data_range_returns_tz_aware_utc_index(monkeypatch):
     assert str(df.index.tz) == "UTC"
 
 
+def test_fetch_twelve_data_range_clips_boundary_leak(monkeypatch):
+    """Real production bug: requesting end_date+1 as an (assumed-exclusive)
+    API boundary let Twelve Data return one bar exactly at that next
+    midnight. That single leaked bar made a whole day LOOK covered (1 of
+    ~96 expected bars present), which froze refresh()'s advancement for
+    four real days — the date-level 'is this day done' check saw *a* bar
+    and stopped looking. Must never trust the API's boundary handling;
+    clip explicitly regardless of what it actually returns."""
+    class FakeResponse:
+        def json(self):
+            return {"values": [
+                {"datetime": "2026-07-06 23:45:00", "open": "1.1", "high": "1.11",
+                 "low": "1.09", "close": "1.10"},
+                {"datetime": "2026-07-08 00:00:00", "open": "1.1", "high": "1.11",
+                 "low": "1.09", "close": "1.10"},   # leaked bar, one day past end_date
+            ]}
+    monkeypatch.setattr(data.os.environ, "get", lambda k, d="": "fake-key")
+    monkeypatch.setattr(data.requests, "get", lambda *a, **k: FakeResponse())
+
+    df = data.fetch_twelve_data_range("15min", dt.date(2026, 7, 6), dt.date(2026, 7, 7))
+    assert len(df) == 1
+    assert not any(idx.date() == dt.date(2026, 7, 8) for idx in df.index)
+
+
 def test_fetch_twelve_data_range_empty_without_api_key(monkeypatch):
     monkeypatch.setattr(data.os.environ, "get", lambda k, d="": "")
     assert data.fetch_twelve_data_range("15min", dt.date(2026, 7, 6), dt.date(2026, 7, 6)).empty

@@ -160,7 +160,15 @@ def fetch_twelve_data_range(interval: str, start_date: dt.date, end_date: dt.dat
         df["volume"] = pd.to_numeric(df["volume"], errors="coerce").fillna(0.0)
     else:
         df["volume"] = 0.0
-    return df[["open", "high", "low", "close", "volume"]].sort_index()
+    df = df[["open", "high", "low", "close", "volume"]].sort_index()
+    # Explicitly clip to the requested range regardless of how the API treats
+    # its own end_date boundary (inclusive vs exclusive is not documented
+    # reliably enough to trust) — a real production bug: a single bar leaking
+    # in at exactly end_date+1's midnight made a day LOOK covered with only
+    # 1 of ~96 expected bars present, freezing all further advancement since
+    # the date-level "is this day done" check saw *a* bar and stopped there.
+    range_end = dt.datetime.combine(end_date, dt.time(23, 59, 59), tzinfo=dt.timezone.utc)
+    return df[df.index <= pd.Timestamp(range_end)]
 
 
 def refresh(years_back: int = 3) -> dict:
@@ -174,7 +182,13 @@ def refresh(years_back: int = 3) -> dict:
         previous_last_date = pd.read_csv(f15, index_col=0, parse_dates=True).index[-1].date()
     else:
         previous_last_date = dt.date.today() - dt.timedelta(days=365 * years_back)
-    end = dt.date.today() - dt.timedelta(days=1)
+    # Try through TODAY, not just yesterday: Dukascopy's ~1-day publish delay
+    # is the documented default, but with checks now every 8 hours (not once
+    # a day) it's worth opportunistically trying for same-day data too — a
+    # day that isn't published yet just comes back 'empty', harmlessly.
+    # check_staleness() below still measures against the conservative
+    # yesterday-based expectation, so genuine alerting is unaffected.
+    end = dt.date.today()
 
     # Weekdays from previous_last_date (inclusive — re-try it in case it was
     # only partially published) through end (inclusive). Works identically
