@@ -2,13 +2,16 @@
   "date": "2026-07-09",
   "type": "refresh",
   "previous_last_date": "2026-07-08",
-  "new_last_date": "2026-07-08",
-  "advanced": false,
+  "new_last_date": "2026-07-09",
+  "advanced": true,
   "stale_trading_days": 0,
   "rejected_days": [],
   "unreachable_days": [
-    "2026-07-08"
+    "2026-07-08",
+    "2026-07-09"
   ],
-  "fallback_used": false,
-  "fallback_dates": []
+  "fallback_used": true,
+  "fallback_dates": [
+    "2026-07-09"
+  ]
 }
