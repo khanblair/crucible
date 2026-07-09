@@ -55,6 +55,7 @@ def log_signals(df15: pd.DataFrame, df1h: pd.DataFrame, settings: dict) -> dict:
 
     idx = {str(t): i for i, t in enumerate(df15.index)}
     intrabar = load_intrabar()
+    entry_valid_bars = settings["strategy_fixed"]["entry_valid_bars"]
     open_signals = [r for r in existing + new_records
                     if r["kind"] == "signal" and r["time"] not in resolved]
     resolutions = []
@@ -62,13 +63,20 @@ def log_signals(df15: pd.DataFrame, df1h: pd.DataFrame, settings: dict) -> dict:
         i = idx.get(rec["time"])
         if i is None:
             continue
+        # simulate_trade's fill window is capped by however much of df15
+        # exists right now — a signal near the data edge can get fewer than
+        # entry_valid_bars to fill purely because later bars don't exist yet.
+        # Only trust a None (never filled) once the full window has actually
+        # elapsed; otherwise leave it open for a future run with more data.
+        has_full_window = i + 1 + entry_valid_bars <= len(df15)
         sig = {"time": pd.Timestamp(rec["time"]), "direction": rec["direction"],
                "entry": rec["entry"], "stop": rec["stop"], "target": rec["target"]}
         trade = simulate_trade(df15, i, sig, settings, intrabar, genome["exit_style"])
         if trade is None:
-            resolutions.append({"kind": "resolution", "signal_time": rec["time"],
-                                "outcome": "unfilled", "pnl_pips": 0.0,
-                                "resolved": dt.date.today().isoformat()})
+            if has_full_window:
+                resolutions.append({"kind": "resolution", "signal_time": rec["time"],
+                                    "outcome": "unfilled", "pnl_pips": 0.0,
+                                    "resolved": dt.date.today().isoformat()})
         elif trade["exit_time"] != str(df15.index[-1]):  # still open at data edge: wait
             resolutions.append({"kind": "resolution", "signal_time": rec["time"],
                                 "outcome": "closed", "pnl_pips": trade["pnl_pips"],

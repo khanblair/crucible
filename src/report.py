@@ -146,9 +146,19 @@ def _made_or_lost(usd: float) -> str:
 
 
 def _forward_money(settings: dict) -> dict | None:
-    """USD view of the paper-forward log: net result and its daily/weekly/
-    yearly pace over the calendar span the signals actually cover, plus how
-    that pace compares against the configured daily target."""
+    """USD view of the paper-forward log over a rolling recent window (not
+    all-time): net result and its daily/weekly/yearly pace over the calendar
+    span the in-window signals actually cover, plus how that pace compares
+    against the configured daily target.
+
+    Deliberately windowed rather than cumulative-since-inception: an all-time
+    tally only moves when a trade closes, which can go many days without
+    happening even while the pipeline is healthy (no fill != broken) — that
+    made the report look frozen. A rolling window still recomputes every day
+    because "days elapsed since the oldest in-window trade" grows daily even
+    with zero new closes, and returns None-signals (n=0) honestly instead of
+    silently repeating a stale total.
+    """
     path = ROOT / "results" / "forward_log" / "signals.jsonl"
     if not path.exists():
         return None
@@ -157,15 +167,23 @@ def _forward_money(settings: dict) -> dict | None:
               if r.get("kind") == "resolution" and r.get("outcome") == "closed"]
     if not closed:
         return None
-    dates = sorted(r["signal_time"][:10] for r in closed)
-    span = max((dt.date.fromisoformat(dates[-1]) - dt.date.fromisoformat(dates[0])).days, 1)
-    net = _usd(sum(r["pnl_pips"] for r in closed), settings)
-    per_day = net / span
+    window_days = settings["reporting"]["rolling_window_days"]
     target = settings["reporting"]["daily_target_usd"]
-    return {"n": len(closed), "span_days": span, "net_usd": round(net, 2),
-            "per_day": round(per_day, 2), "per_week": round(per_day * 7, 2),
-            "per_year": round(per_day * 365), "target_usd": target,
-            "target_gap": round(per_day - target, 2), "meets_target": per_day >= target}
+    today = dt.datetime.now(dt.timezone.utc).date()
+    cutoff = today - dt.timedelta(days=window_days)
+    windowed = [r for r in closed
+                if dt.date.fromisoformat(r["signal_time"][:10]) >= cutoff]
+    if not windowed:
+        return {"n": 0, "window_days": window_days, "target_usd": target}
+    earliest = min(dt.date.fromisoformat(r["signal_time"][:10]) for r in windowed)
+    span = max((today - earliest).days, 1)
+    net = _usd(sum(r["pnl_pips"] for r in windowed), settings)
+    per_day = net / span
+    return {"n": len(windowed), "window_days": window_days, "span_days": span,
+            "net_usd": round(net, 2), "per_day": round(per_day, 2),
+            "per_week": round(per_day * 7, 2), "per_year": round(per_day * 365),
+            "target_usd": target, "target_gap": round(per_day - target, 2),
+            "meets_target": per_day >= target}
 
 
 def plain_summary(settings: dict, decision: dict | None = None) -> str:
@@ -199,7 +217,7 @@ def plain_summary(settings: dict, decision: dict | None = None) -> str:
                 f"test period the old settings would have {_made_or_lost(base)} "
                 f"and the new ones {_made_or_lost(cand)}.")
     m = _forward_money(settings)
-    if m:
+    if m and m["n"] > 0:
         gap = abs(m["target_gap"])
         target_line = (f"That clears the ${m['target_usd']:,.2f}/day target by ${gap:,.2f}."
                       if m["meets_target"] else
@@ -207,12 +225,18 @@ def plain_summary(settings: dict, decision: dict | None = None) -> str:
                       f"still being refined toward it.")
         pace = "earning" if m["per_day"] >= 0 else "losing"
         parts.append(
-            f"In practice mode — no real money is traded — the last {m['n']} signals "
-            f"over roughly {m['span_days']} day(s) would have {_made_or_lost(m['net_usd'])} "
-            f"with a small starter position (0.1 lot). That pace means {pace} about "
-            f"${abs(m['per_day']):,.2f} a day, ${abs(m['per_week']):,.2f} a week, or "
-            f"${abs(m['per_year']):,.0f} a year — IF the market kept behaving the same "
-            f"way, which is never guaranteed. {target_line}")
+            f"In practice mode — no real money is traded — over the last "
+            f"{m['window_days']} days, {m['n']} signal(s) closed and would have "
+            f"{_made_or_lost(m['net_usd'])} with a small starter position (0.1 lot). "
+            f"That pace means {pace} about ${abs(m['per_day']):,.2f} a day, "
+            f"${abs(m['per_week']):,.2f} a week, or ${abs(m['per_year']):,.0f} a year — "
+            f"IF the market kept behaving the same way, which is never guaranteed. "
+            f"{target_line}")
+    elif m:
+        parts.append(
+            f"No practice signals have closed in the last {m['window_days']} days, "
+            f"so there's no fresh pace to report — the system is still watching for "
+            f"entries that reach their price.")
     else:
         parts.append("Not enough practice signals have been recorded yet to "
                      "estimate results in dollars.")

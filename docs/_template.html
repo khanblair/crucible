@@ -99,7 +99,7 @@ if (!DATA) {
   if (plain) {
     $('plaintext').textContent = plain.text;
     const pm = plain.money;
-    if (pm) {
+    if (pm && pm.n > 0) {
       const money = (v, suffix, cls) => {
         cls = cls || (v >= 0 ? 'ok' : 'bad');
         const sign = v >= 0 ? '+' : '−';
@@ -120,6 +120,11 @@ if (!DATA) {
           <div class="dim" style="margin-top:.2rem">${targetNote}</div></div>` +
         `<div class="card tile"><div class="label">Position size assumed</div>
           <div class="value">${plain.lot_size} lot</div></div>`;
+    } else if (pm) {
+      $('plainmoney').innerHTML =
+        `<div class="card tile" style="grid-column:1/-1">
+          <div class="label">Practice trades (last ${pm.window_days} days)</div>
+          <div class="value dim">No signals closed yet</div></div>`;
     }
   }
 
