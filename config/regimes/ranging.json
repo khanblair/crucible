@@ -1,16 +1,16 @@
 {
   "name": "ranging",
   "genome": "baseline",
-  "last_validated": "2026-07-04",
-  "validated_by": "phase0-seed",
+  "last_validated": "2026-07-10",
+  "validated_by": "optimization 2026-07-10",
   "params": {
-    "rsi_buy_low": 45.0,
-    "rsi_buy_high": 65.0,
-    "rsi_sell_low": 35.0,
-    "rsi_sell_high": 55.0,
-    "atr_stop_mult": 1.5,
-    "atr_target_mult": 1.5,
-    "max_body_atr": 0.5,
-    "entry_buffer_pips": 2.0
+    "rsi_buy_low": 54.99914723008386,
+    "rsi_buy_high": 56.10094805370387,
+    "rsi_sell_low": 44.133747770012974,
+    "rsi_sell_high": 59.22383555427099,
+    "atr_stop_mult": 1.9626915575240653,
+    "atr_target_mult": 1.1404401425292892,
+    "max_body_atr": 0.5868358030233246,
+    "entry_buffer_pips": 3.8945535990768216
   }
 }
