@@ -1,69 +1,69 @@
 {
   "date": "2026-07-11",
   "type": "decision",
-  "regime": "ranging",
+  "regime": "low_volatility",
   "params": {
-    "rsi_buy_low": 54.99914723008386,
-    "rsi_buy_high": 56.10094805370387,
-    "rsi_sell_low": 44.133747770012974,
-    "rsi_sell_high": 59.22383555427099,
-    "atr_stop_mult": 1.9626915575240653,
-    "atr_target_mult": 1.1404401425292892,
-    "max_body_atr": 0.5868358030233246,
-    "entry_buffer_pips": 3.8945535990768216
+    "rsi_buy_low": 42.76248327730211,
+    "rsi_buy_high": 55.8351481559422,
+    "rsi_sell_low": 30.137008919262637,
+    "rsi_sell_high": 64.56963598627624,
+    "atr_stop_mult": 1.1463198802162775,
+    "atr_target_mult": 1.6872643997225318,
+    "max_body_atr": 0.3223799522355975,
+    "entry_buffer_pips": 2.54854305771297
   },
   "baseline_params": {
-    "rsi_buy_low": 54.99914723008386,
-    "rsi_buy_high": 56.10094805370387,
-    "rsi_sell_low": 44.133747770012974,
-    "rsi_sell_high": 59.22383555427099,
-    "atr_stop_mult": 1.9626915575240653,
-    "atr_target_mult": 1.1404401425292892,
-    "max_body_atr": 0.5868358030233246,
-    "entry_buffer_pips": 3.8945535990768216
+    "rsi_buy_low": 45.0,
+    "rsi_buy_high": 65.0,
+    "rsi_sell_low": 35.0,
+    "rsi_sell_high": 55.0,
+    "atr_stop_mult": 1.5,
+    "atr_target_mult": 1.5,
+    "max_body_atr": 0.5,
+    "entry_buffer_pips": 2.0
   },
   "candidate_oos": {
-    "n_trades": 33,
-    "net_profit_pips": -107.085,
-    "expectancy_pips": -3.245,
-    "win_rate": 0.5758,
-    "profit_factor": 0.4215,
-    "max_drawdown": 0.1101
+    "n_trades": 54,
+    "net_profit_pips": -123.9841,
+    "expectancy_pips": -2.296,
+    "win_rate": 0.3333,
+    "profit_factor": 0.5892,
+    "max_drawdown": 0.1502
   },
   "baseline_oos": {
-    "n_trades": 33,
-    "net_profit_pips": -107.085,
-    "expectancy_pips": -3.245,
-    "win_rate": 0.5758,
-    "profit_factor": 0.4215,
-    "max_drawdown": 0.1101
+    "n_trades": 89,
+    "net_profit_pips": -251.5564,
+    "expectancy_pips": -2.8265,
+    "win_rate": 0.4382,
+    "profit_factor": 0.5124,
+    "max_drawdown": 0.2621
   },
   "accepted": false,
   "gates": [
     {
       "name": "improvement",
-      "passed": false,
-      "detail": "candidate -107.085 vs baseline -107.085 (+10% required)"
+      "passed": true,
+      "detail": "candidate -123.9841 vs baseline -251.5564 (+10% required)"
     },
     {
       "name": "trade_floor",
       "passed": true,
-      "detail": "33 trades (floor 30)"
+      "detail": "54 trades (floor 30)"
     },
     {
       "name": "drawdown_ceiling",
-      "passed": true,
-      "detail": "11.01% (ceiling 12%)"
+      "passed": false,
+      "detail": "15.02% (ceiling 12%)"
     },
     {
       "name": "win_rate_floor",
-      "passed": true,
-      "detail": "57.58% (floor 40%)"
+      "passed": false,
+      "detail": "33.33% (floor 40%)"
     },
     {
       "name": "consistency",
       "passed": true,
-      "detail": "test -107.085 vs train -2.2173 pips"
+      "detail": "test -123.9841 vs train -113.0544 pips"
     }
   ],
   "champion": {
