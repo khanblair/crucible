@@ -1,17 +1,17 @@
 {
   "date": "2026-07-14",
   "type": "refresh",
-  "previous_last_date": "2026-07-13",
+  "previous_last_date": "2026-07-14",
   "new_last_date": "2026-07-14",
-  "advanced": true,
+  "advanced": false,
   "stale_trading_days": 0,
-  "rejected_days": [],
-  "unreachable_days": [
-    "2026-07-13",
-    "2026-07-14"
+  "rejected_days": [
+    {
+      "date": "2026-07-14",
+      "http_status": 503
+    }
   ],
-  "fallback_used": true,
-  "fallback_dates": [
-    "2026-07-14"
-  ]
+  "unreachable_days": [],
+  "fallback_used": false,
+  "fallback_dates": []
 }
