@@ -1,0 +1,13 @@
+{
+  "date": "2026-07-15",
+  "type": "regime",
+  "decision": {
+    "regime": "ranging",
+    "rule": "3: neutral/no-trend with mid-range volatility",
+    "adx": 22.25,
+    "atr": 0.001162,
+    "atr_percentile": 52.4
+  },
+  "stale": false,
+  "swapped": false
+}
