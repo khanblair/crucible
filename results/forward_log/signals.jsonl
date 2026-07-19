@@ -112,3 +112,7 @@
 {"kind": "resolution", "signal_time": "2026-07-16 09:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-07-17"}
 {"kind": "resolution", "signal_time": "2026-07-16 10:00:00+00:00", "outcome": "closed", "pnl_pips": -7.6085, "resolved": "2026-07-17"}
 {"kind": "resolution", "signal_time": "2026-07-16 10:15:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-07-17"}
+{"kind": "signal", "time": "2026-07-17 07:30:00+00:00", "direction": 1, "entry": 1.14518, "stop": 1.144590193758225, "target": 1.1457698062417752, "params_file": "config/regimes/low_volatility.json", "logged": "2026-07-19"}
+{"kind": "signal", "time": "2026-07-17 07:45:00+00:00", "direction": 1, "entry": 1.14514, "stop": 1.1445398227754946, "target": 1.1457401772245055, "params_file": "config/regimes/low_volatility.json", "logged": "2026-07-19"}
+{"kind": "resolution", "signal_time": "2026-07-17 07:30:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-07-19"}
+{"kind": "resolution", "signal_time": "2026-07-17 07:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-07-19"}

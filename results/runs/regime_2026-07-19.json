@@ -4,9 +4,9 @@
   "decision": {
     "regime": "low_volatility",
     "rule": "3: low volatility in the absence of trend",
-    "adx": 12.63,
-    "atr": 0.000837,
-    "atr_percentile": 6.2
+    "adx": 8.99,
+    "atr": 0.000678,
+    "atr_percentile": 0.3
   },
   "stale": false,
   "swapped": false
