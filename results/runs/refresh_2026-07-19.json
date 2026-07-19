@@ -5,7 +5,12 @@
   "new_last_date": "2026-07-17",
   "advanced": false,
   "stale_trading_days": 0,
-  "rejected_days": [],
+  "rejected_days": [
+    {
+      "date": "2026-07-17",
+      "http_status": 503
+    }
+  ],
   "unreachable_days": [],
   "fallback_used": false,
   "fallback_dates": []
