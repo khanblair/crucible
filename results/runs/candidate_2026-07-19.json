@@ -4,7 +4,7 @@
   "regime": "low_volatility",
   "genome": "baseline",
   "params": {
-    "rsi_buy_low": 42.76248327730211,
+    "rsi_buy_low": 42.76248327730212,
     "rsi_buy_high": 55.8351481559422,
     "rsi_sell_low": 30.137008919262637,
     "rsi_sell_high": 64.56963598627624,
