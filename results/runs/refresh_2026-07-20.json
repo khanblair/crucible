@@ -8,7 +8,7 @@
   "rejected_days": [
     {
       "date": "2026-07-20",
-      "http_status": 503
+      "http_status": 404
     }
   ],
   "unreachable_days": [],
