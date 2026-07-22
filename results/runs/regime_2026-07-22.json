@@ -1,0 +1,13 @@
+{
+  "date": "2026-07-22",
+  "type": "regime",
+  "decision": {
+    "regime": "trending",
+    "rule": "2: a quiet trend is still a trend",
+    "adx": 28.25,
+    "atr": 0.000666,
+    "atr_percentile": 0.5
+  },
+  "stale": false,
+  "swapped": true
+}
