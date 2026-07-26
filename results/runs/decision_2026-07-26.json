@@ -8,7 +8,7 @@
     "rsi_sell_low": 28.34033265655056,
     "rsi_sell_high": 45.023229393561216,
     "atr_stop_mult": 1.191017979600231,
-    "atr_target_mult": 2.166150703151896,
+    "atr_target_mult": 2.1661507031518954,
     "max_body_atr": 0.3115796402811405,
     "entry_buffer_pips": 1.0286212812654423
   },
