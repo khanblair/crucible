@@ -11,7 +11,7 @@
     "atr_stop_mult": 2.912778745511276,
     "atr_target_mult": 2.704857675515229,
     "max_body_atr": 0.6849593945957254,
-    "entry_buffer_pips": 0.45127515407189306
+    "entry_buffer_pips": 0.45127515407189295
   },
   "train_metrics": {
     "n_trades": 173,
