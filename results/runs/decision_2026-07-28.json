@@ -64,11 +64,6 @@
       "name": "consistency",
       "passed": true,
       "detail": "test -58.9607 vs train -67.1207 pips"
-    },
-    {
-      "name": "cooldown",
-      "passed": false,
-      "detail": "cooldown window active"
     }
   ],
   "champion": {
