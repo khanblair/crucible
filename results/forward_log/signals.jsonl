@@ -172,3 +172,5 @@
 {"kind": "resolution", "signal_time": "2026-07-30 11:30:00+00:00", "outcome": "closed", "pnl_pips": 5.3694, "resolved": "2026-07-31"}
 {"kind": "resolution", "signal_time": "2026-07-30 13:00:00+00:00", "outcome": "closed", "pnl_pips": 20.213, "resolved": "2026-07-31"}
 {"kind": "resolution", "signal_time": "2026-07-30 15:00:00+00:00", "outcome": "closed", "pnl_pips": 13.7686, "resolved": "2026-07-31"}
+{"kind": "resolution", "signal_time": "2026-07-31 07:00:00+00:00", "outcome": "closed", "pnl_pips": -9.9915, "resolved": "2026-08-01"}
+{"kind": "resolution", "signal_time": "2026-07-31 07:15:00+00:00", "outcome": "closed", "pnl_pips": -9.9243, "resolved": "2026-08-01"}

@@ -1,6 +1,6 @@
 {
-  "regime": "trending",
-  "params_file": "config/regimes/trending.json",
+  "regime": "high_volatility",
+  "params_file": "config/regimes/high_volatility.json",
   "fallback_champion_zero": false,
-  "updated": "2026-07-29"
+  "updated": "2026-08-01"
 }
