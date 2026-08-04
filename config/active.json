@@ -1,6 +1,6 @@
 {
-  "regime": "trending",
-  "params_file": "config/regimes/trending.json",
+  "regime": "ranging",
+  "params_file": "config/regimes/ranging.json",
   "fallback_champion_zero": false,
-  "updated": "2026-08-03"
+  "updated": "2026-08-04"
 }
