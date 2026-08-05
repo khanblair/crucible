@@ -178,3 +178,10 @@
 {"kind": "signal", "time": "2026-07-28 12:15:00+00:00", "direction": -1, "entry": 1.1358205446400922, "stop": 1.1367184497247613, "target": 1.1352988085584281, "params_file": "config/regimes/ranging.json", "logged": "2026-08-04"}
 {"kind": "resolution", "signal_time": "2026-07-28 08:15:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-08-04"}
 {"kind": "resolution", "signal_time": "2026-07-28 12:15:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-08-04"}
+{"kind": "signal", "time": "2026-07-28 10:30:00+00:00", "direction": -1, "entry": 1.1354110233208992, "stop": 1.1364230272133489, "target": 1.1346247835855685, "params_file": "config/regimes/low_volatility.json", "logged": "2026-08-05"}
+{"kind": "signal", "time": "2026-08-04 14:45:00+00:00", "direction": 1, "entry": 1.1526389766791008, "stop": 1.1511600610376513, "target": 1.1537879665705277, "params_file": "config/regimes/low_volatility.json", "logged": "2026-08-05"}
+{"kind": "signal", "time": "2026-08-04 15:15:00+00:00", "direction": 1, "entry": 1.1520389766791008, "stop": 1.150567187362624, "target": 1.153182430030696, "params_file": "config/regimes/low_volatility.json", "logged": "2026-08-05"}
+{"kind": "signal", "time": "2026-08-05 07:30:00+00:00", "direction": 1, "entry": 1.153948976679101, "stop": 1.1528445825859033, "target": 1.154806995631414, "params_file": "config/regimes/low_volatility.json", "logged": "2026-08-05"}
+{"kind": "resolution", "signal_time": "2026-07-28 10:30:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-08-05"}
+{"kind": "resolution", "signal_time": "2026-08-04 14:45:00+00:00", "outcome": "closed", "pnl_pips": 9.0501, "resolved": "2026-08-05"}
+{"kind": "resolution", "signal_time": "2026-08-04 15:15:00+00:00", "outcome": "closed", "pnl_pips": 9.0224, "resolved": "2026-08-05"}
