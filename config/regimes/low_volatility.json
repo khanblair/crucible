@@ -1,16 +1,16 @@
 {
   "name": "low_volatility",
   "genome": "baseline",
-  "last_validated": "2026-07-04",
-  "validated_by": "phase0-seed",
+  "last_validated": "2026-07-28",
+  "validated_by": "optimization 2026-07-28",
   "params": {
-    "rsi_buy_low": 45.0,
-    "rsi_buy_high": 65.0,
-    "rsi_sell_low": 35.0,
-    "rsi_sell_high": 55.0,
-    "atr_stop_mult": 1.5,
-    "atr_target_mult": 1.5,
-    "max_body_atr": 0.5,
-    "entry_buffer_pips": 2.0
+    "rsi_buy_low": 39.64746156405826,
+    "rsi_buy_high": 74.04416626718343,
+    "rsi_sell_low": 28.745371043007406,
+    "rsi_sell_high": 45.40656321060074,
+    "atr_stop_mult": 2.498959962678184,
+    "atr_target_mult": 1.9414763464019251,
+    "max_body_atr": 0.30020390174894135,
+    "entry_buffer_pips": 1.9897667910079706
   }
 }
