@@ -148,6 +148,54 @@ def test_mean_reversion_no_signal_without_stretch():
     assert signals == []
 
 
+# --------------------------------------------- volatility_squeeze_breakout
+# Deliberately outside the RSI/EMA-trend toolkit: 96-bar squeeze lookback and
+# 20-bar range lookback are hardcoded structural constants (not overridable
+# via FIXED, same as breakout()'s BREAKOUT_LOOKBACK), so fixtures need real
+# bar counts rather than the 60-bar fixtures the other entries use.
+def _squeeze_then_breakout(n_choppy=80, n_quiet=31, jump=0.0080):
+    idx = pd.date_range("2026-01-05 00:00", periods=n_choppy + n_quiet + 1, freq="15min")
+    close = [1.1000 + (0.0020 if i % 2 == 0 else -0.0020) for i in range(n_choppy)]
+    close += [1.1000 + (0.00002 if i % 2 == 0 else -0.00002) for i in range(n_quiet)]
+    close.append(1.1000 + jump)
+    open_ = [1.1000] + close[:-1]
+    high = [max(o, c) + 0.0002 for o, c in zip(open_, close)]
+    low = [min(o, c) - 0.0002 for o, c in zip(open_, close)]
+    return pd.DataFrame({"open": open_, "high": high, "low": low, "close": close}, index=idx)
+
+
+def test_volatility_squeeze_breakout_fires_after_genuine_squeeze():
+    df15 = _squeeze_then_breakout()
+    df1h = h1_from_15m(df15)
+    signals = entries.volatility_squeeze_breakout(df15, df1h, PARAMS, FIXED)
+    assert len(signals) == 1
+    s = signals[0]
+    assert s["direction"] == 1
+    assert s["stop"] == pytest.approx(s["entry"] - PARAMS["atr_stop_mult"] * s["atr"])
+    assert s["target"] == pytest.approx(s["entry"] + PARAMS["atr_target_mult"] * s["atr"])
+
+
+def test_volatility_squeeze_breakout_no_signal_without_a_squeeze():
+    n = 111
+    idx = pd.date_range("2026-01-05 00:00", periods=n, freq="15min")
+    close = [1.1000 + (0.0020 if i % 2 == 0 else -0.0020) for i in range(n - 1)]
+    close.append(close[-1] + 0.0080)   # a breakout-sized jump, but ATR was never compressed
+    open_ = [1.1000] + close[:-1]
+    high = [max(o, c) + 0.0002 for o, c in zip(open_, close)]
+    low = [min(o, c) - 0.0002 for o, c in zip(open_, close)]
+    df15 = pd.DataFrame({"open": open_, "high": high, "low": low, "close": close}, index=idx)
+    df1h = h1_from_15m(df15)
+    signals = entries.volatility_squeeze_breakout(df15, df1h, PARAMS, FIXED)
+    assert signals == []
+
+
+def test_volatility_squeeze_breakout_no_signal_without_a_breakout():
+    df15 = _squeeze_then_breakout(jump=0.0)   # squeeze present, price never leaves the range
+    df1h = h1_from_15m(df15)
+    signals = entries.volatility_squeeze_breakout(df15, df1h, PARAMS, FIXED)
+    assert signals == []
+
+
 # --------------------------------------------------------------------- exits
 SETTINGS = {"strategy_fixed": {"trail_lookback": 3}}
 
@@ -201,6 +249,31 @@ def test_fixed_r_multiple_never_touched_returns_empty():
     df = exit_frame([(1.0995, 1.0999, 1.0990, 1.0996)] * 5)
     sig = {"direction": 1, "entry": 1.1000, "stop": 1.0980, "target": 1.1020}
     assert exits.fixed_r_multiple(df, 0, sig, SETTINGS, {}) == []
+
+
+def test_time_stop_forces_close_when_window_elapses_untouched():
+    df = exit_frame([(1.0995, 1.0999, 1.0990, 1.0996)] * (exits.TIME_STOP_BARS + 3))
+    sig = {"direction": 1, "entry": 1.1000, "stop": 1.0950, "target": 1.1050}
+    legs = exits.time_stop(df, 0, sig, SETTINGS, {})
+    assert legs == [(1.0996, 1.0, False, exits.TIME_STOP_BARS)]   # forced close, not a stop
+
+
+def test_time_stop_resolves_normally_if_touched_before_window_elapses():
+    bars = ([(1.0995, 1.0999, 1.0990, 1.0996)] * 3 + [(1.0996, 1.1055, 1.0994, 1.1052)]
+            + [(1.0995, 1.0999, 1.0990, 1.0996)] * 30)
+    df = exit_frame(bars)
+    sig = {"direction": 1, "entry": 1.1000, "stop": 1.0950, "target": 1.1050}
+    legs = exits.time_stop(df, 0, sig, SETTINGS, {})
+    assert legs == [(1.1050, 1.0, False, 3)]
+
+
+def test_time_stop_stays_open_when_window_not_yet_available():
+    """Fewer bars than TIME_STOP_BARS exist yet — relevant for live paper-
+    forward runs, which advance only a few hours of data per run. Must not
+    force a premature close just because more data doesn't exist yet."""
+    df = exit_frame([(1.0995, 1.0999, 1.0990, 1.0996)] * 5)
+    sig = {"direction": 1, "entry": 1.1000, "stop": 1.0950, "target": 1.1050}
+    assert exits.time_stop(df, 0, sig, SETTINGS, {}) == []
 
 
 # ------------------------------------------------------------------ registry

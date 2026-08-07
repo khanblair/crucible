@@ -126,3 +126,51 @@ def mean_reversion(df15, df1h, params: dict, fixed: dict) -> list[dict]:
                             "target": entry - params["atr_target_mult"] * bar_atr,
                             "atr": bar_atr})
     return signals
+
+
+SQUEEZE_LOOKBACK = 96      # bars (~24h) — the trailing window ATR's own percentile is measured against
+SQUEEZE_PERCENTILE = 0.20  # squeeze = current ATR at or below its own 20th percentile over that window
+RANGE_LOOKBACK = 20        # bars — same breakout-range lookback as breakout()
+
+
+def volatility_squeeze_breakout(df15, df1h, params: dict, fixed: dict) -> list[dict]:
+    """Waits for a period of unusually tight volatility (ATR compressed into
+    the bottom 20% of its own trailing 24h range), then enters on a breakout
+    of the recent 20-bar range once that squeeze resolves. Deliberately
+    outside the RSI/EMA-trend toolkit every other entry uses — direction
+    comes purely from which side of the range price breaks, not from
+    momentum or trend agreement, so it is a genuinely different hypothesis
+    from ema_pullback/breakout/mean_reversion, all three of which lean on
+    the same RSI-confirmed, trend-filtered family that has shown no edge."""
+    a = atr_ind(df15, fixed["atr_period"])
+    squeeze_threshold = a.rolling(SQUEEZE_LOOKBACK).quantile(SQUEEZE_PERCENTILE)
+    was_squeezed = a.shift() <= squeeze_threshold.shift()
+    recent_high = df15["high"].shift().rolling(RANGE_LOOKBACK).max()
+    recent_low = df15["low"].shift().rolling(RANGE_LOOKBACK).min()
+
+    buf = params["entry_buffer_pips"] * PIP
+    signals = []
+    warmup = max(SQUEEZE_LOOKBACK, RANGE_LOOKBACK, fixed["atr_period"]) + 1
+    for i in range(warmup, len(df15)):
+        t = df15.index[i]
+        if not session_ok(t, fixed):
+            continue
+        o, h, l, c = df15.iloc[i][["open", "high", "low", "close"]]
+        bar_atr = a.iloc[i]
+        if not candle_quality_ok(o, c, bar_atr, params):
+            continue
+        if not was_squeezed.iloc[i]:
+            continue
+        if c > recent_high.iloc[i]:
+            entry = h + buf
+            signals.append({"time": t, "direction": 1, "entry": entry,
+                            "stop": entry - params["atr_stop_mult"] * bar_atr,
+                            "target": entry + params["atr_target_mult"] * bar_atr,
+                            "atr": bar_atr})
+        elif c < recent_low.iloc[i]:
+            entry = l - buf
+            signals.append({"time": t, "direction": -1, "entry": entry,
+                            "stop": entry + params["atr_stop_mult"] * bar_atr,
+                            "target": entry - params["atr_target_mult"] * bar_atr,
+                            "atr": bar_atr})
+    return signals

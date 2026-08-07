@@ -86,3 +86,44 @@ def fixed_r_multiple(df15, fill_idx: int, sig: dict, settings: dict,
         return [(price, 1.0, first == "stop", j)]
 
     return []
+
+
+TIME_STOP_BARS = 24  # bars (~6h) — force-close if neither stop nor target has resolved by then
+
+
+def time_stop(df15, fill_idx: int, sig: dict, settings: dict,
+             intrabar: dict) -> list[tuple[float, float, bool, int]]:
+    """Same stop/target logic as fixed_r_multiple, but forces a close at
+    market after TIME_STOP_BARS bars if neither has been touched — avoids a
+    trade sitting open indefinitely in quiet conditions, bleeding spread and
+    swap without ever resolving. If the window hasn't fully elapsed only
+    because more data doesn't exist yet (live paper-forward runs advance a
+    few hours at a time), the trade stays open rather than being forced to a
+    premature call — the same principle as the entry-fill-window handling in
+    forward.py."""
+    d = sig["direction"]
+    stop, target = sig["stop"], sig["target"]
+    window_end = fill_idx + TIME_STOP_BARS
+    full_window_available = window_end < len(df15)
+    last_j = min(window_end, len(df15) - 1)
+
+    for j in range(fill_idx, last_j + 1):
+        bar = df15.iloc[j]
+        t = df15.index[j]
+        stop_hit = bar["low"] <= stop if d == 1 else bar["high"] >= stop
+        tp_hit = bar["high"] >= target if d == 1 else bar["low"] <= target
+        if stop_hit and tp_hit:
+            first = resolve_first_touch(t, d, intrabar)
+        elif stop_hit:
+            first = "stop"
+        elif tp_hit:
+            first = "target"
+        else:
+            first = None
+        if first is not None:
+            price = stop if first == "stop" else target
+            return [(price, 1.0, first == "stop", j)]
+        if j == window_end and full_window_available:
+            return [(bar["close"], 1.0, False, j)]  # time stop: forced close, not a real stop
+
+    return []

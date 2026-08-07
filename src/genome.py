@@ -16,11 +16,13 @@ ENTRY_SIGNALS = {
     "ema_pullback": entries.ema_pullback,
     "breakout": entries.breakout,
     "mean_reversion": entries.mean_reversion,
+    "volatility_squeeze_breakout": entries.volatility_squeeze_breakout,
 }
 
 EXIT_STYLES = {
     "atr_trail_half": exits.atr_trail_half,
     "fixed_r_multiple": exits.fixed_r_multiple,
+    "time_stop": exits.time_stop,
 }
 
 DEFAULT_GENOME = {"entry_signal": "ema_pullback", "exit_style": "atr_trail_half"}

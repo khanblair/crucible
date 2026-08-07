@@ -160,15 +160,17 @@ def _synthetic_candles(n_days=40, seed=5):
 
 
 def test_screen_ranks_all_genome_combinations_by_net_profit():
+    from src.genome import ENTRY_SIGNALS, EXIT_STYLES
     settings = load_settings()
     df15, df1h = _synthetic_candles()
     params = json.loads(pathlib.Path("config/champion_zero.json").read_text())["params"]
     results = screen(df15, df1h, settings, {}, None, params)
-    assert len(results) == 6   # 3 entry signals x 2 exit styles
+    expected = len(ENTRY_SIGNALS) * len(EXIT_STYLES)
+    assert len(results) == expected
     nets = [r["net_profit_pips"] for r in results]
     assert nets == sorted(nets, reverse=True)   # ranked, best first
     seen = {(r["genome"]["entry_signal"], r["genome"]["exit_style"]) for r in results}
-    assert len(seen) == 6   # every combination appears exactly once
+    assert len(seen) == expected   # every combination appears exactly once
 
 
 def test_refine_picks_the_best_of_top_k_by_training_net_profit():
