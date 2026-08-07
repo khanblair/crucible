@@ -129,8 +129,16 @@ def mean_reversion(df15, df1h, params: dict, fixed: dict) -> list[dict]:
 
 
 SQUEEZE_LOOKBACK = 96      # bars (~24h) — the trailing window ATR's own percentile is measured against
-SQUEEZE_PERCENTILE = 0.20  # squeeze = current ATR at or below its own 20th percentile over that window
-RANGE_LOOKBACK = 20        # bars — same breakout-range lookback as breakout()
+SQUEEZE_PERCENTILE = 0.50  # squeeze = current ATR at or below its own trailing median. A stricter
+# percentile (originally 0.20, a true "tight compression") combined with the session and
+# candle-quality filters compounded into a signal so rare (13 over 3 years of EUR/USD) that
+# it could win the screen stage on a single lucky small-sample trade yet never reach the
+# min_oos_trades floor in refine() — which crashed a real production run when it and its
+# variants swept all of screen_top_k with nothing viable behind them. 0.50 (below-average
+# recent volatility, not an extreme compression) keeps the "no RSI, no trend, structure only"
+# character while producing enough signals to actually be searchable.
+RANGE_LOOKBACK = 10        # bars — halved from 20 for the same reason: easier range breaks
+# without changing what the signal is testing (compressed-then-breaking volatility).
 
 
 def volatility_squeeze_breakout(df15, df1h, params: dict, fixed: dict) -> list[dict]:

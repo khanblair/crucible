@@ -167,10 +167,32 @@ def test_screen_ranks_all_genome_combinations_by_net_profit():
     results = screen(df15, df1h, settings, {}, None, params)
     expected = len(ENTRY_SIGNALS) * len(EXIT_STYLES)
     assert len(results) == expected
-    nets = [r["net_profit_pips"] for r in results]
-    assert nets == sorted(nets, reverse=True)   # ranked, best first
     seen = {(r["genome"]["entry_signal"], r["genome"]["exit_style"]) for r in results}
-    assert len(seen) == expected   # every combination appears exactly once
+    assert len(seen) == expected   # every combination appears exactly once, nothing dropped
+    # ranked best-first net profit *within* each viability tier (see next test for the tiering)
+    floor = settings["gates"]["min_oos_trades"]
+    viable_nets = [r["net_profit_pips"] for r in results if r["n_trades"] >= floor]
+    sparse_nets = [r["net_profit_pips"] for r in results if r["n_trades"] < floor]
+    assert viable_nets == sorted(viable_nets, reverse=True)
+    assert sparse_nets == sorted(sparse_nets, reverse=True)
+
+
+def test_screen_ranks_every_viable_genome_above_every_sparse_one():
+    """Production bug, 2026-08-07: a genome with a handful of trades and a
+    small loss outranked genomes with hundreds of trades and a larger loss,
+    purely because a tiny sample can't lose much. That let unviable genomes
+    sweep refine()'s top-K and crash the whole run. A sparse genome must
+    never outrank a viable one, no matter how good its raw net profit looks."""
+    settings = load_settings()
+    df15, df1h = _synthetic_candles(n_days=60)   # enough for ema_pullback, not for sparse breakout
+    params = json.loads(pathlib.Path("config/champion_zero.json").read_text())["params"]
+    results = screen(df15, df1h, settings, {}, None, params)
+    floor = settings["gates"]["min_oos_trades"]
+    last_viable = max((i for i, r in enumerate(results) if r["n_trades"] >= floor), default=-1)
+    first_sparse = min((i for i, r in enumerate(results) if r["n_trades"] < floor),
+                       default=len(results))
+    assert last_viable < first_sparse   # every viable genome precedes every sparse one
+    assert any(r["n_trades"] < floor for r in results)   # sanity: this fixture has a sparse genome
 
 
 def test_refine_picks_the_best_of_top_k_by_training_net_profit():
@@ -229,6 +251,37 @@ def test_check_trigger_ignores_phase0_status(monkeypatch, clean_runs):
     monkeypatch.setattr("src.evolve.phase0_passed", lambda: True)
     fires_when_passed = _check_trigger()
     assert fires_when_failed == fires_when_passed is True
+
+
+def test_run_evolution_returns_gracefully_when_no_screened_genome_is_viable(monkeypatch, clean_runs, tmp_path):
+    """Production crash, 2026-08-07: every top-K screened genome failed to
+    reach min_oos_trades within the search budget, and the RuntimeError
+    propagated all the way out of run_evolution() uncaught. No
+    evolution_<date>.json was written, so cooldown never applied and every
+    future 8-hourly cycle would have re-attempted and re-crashed identically.
+    CRUCIBLE.md promises a graceful report and a quarter-long cooldown
+    instead of a crash - this is what an uncaught exception cannot deliver."""
+    settings = load_settings()
+    n = settings["evolution"]["losing_streak_runs"]
+    for i in range(n):
+        _write_decision(clean_runs, f"2026-10-{10 + i:02d}", -10.0 - i, -9.0 - i * 0.001)
+
+    real_root = pathlib.Path(__file__).resolve().parent.parent
+    (tmp_path / "config" / "regimes").mkdir(parents=True)
+    for f in (real_root / "config" / "regimes").glob("*.json"):
+        (tmp_path / "config" / "regimes" / f.name).write_text(f.read_text())
+    (tmp_path / "config" / "champion_zero.json").write_text(
+        (real_root / "config" / "champion_zero.json").read_text())
+
+    df15, df1h = _synthetic_candles(n_days=1)   # far too short for anything to clear the floor
+    monkeypatch.setattr("src.data.load_candles", lambda: (df15, df1h))
+
+    result = run_evolution()
+
+    assert result["attempted"] is True
+    assert result["accepted"] is False
+    assert "viable" in result["reason"].lower()
+    assert (clean_runs / f"evolution_{dt.date.today().isoformat()}.json").exists()
 
 
 def test_run_evolution_reports_phase0_status_without_gating_on_it(monkeypatch):

@@ -59,13 +59,28 @@ def evolution_cooldown_clear(settings: dict, today: dt.date | None = None) -> bo
 def screen(df15, df1h, settings: dict, intrabar: dict, allowed_dates: set | None,
           params: dict) -> list[dict]:
     """One backtest per genome combination with sensible default parameters,
-    ranked by net profit. Cheap: no Optuna involved yet."""
+    ranked by net profit. Cheap: no Optuna involved yet.
+
+    Genomes that already can't reach min_oos_trades at this stage are ranked
+    below every genome that can, regardless of net profit — a genome with a
+    handful of trades and a small loss otherwise looks "best" by raw pips
+    purely because it has too little sample to lose much, which crowded
+    refine()'s top-K with candidates no amount of parameter tuning could
+    ever get past the trade floor (tuning searches within the same entry/
+    exit structure; it can't manufacture signal opportunities the structure
+    doesn't produce). Nothing is dropped — full visibility is preserved,
+    sparse genomes just sort after every genome with a real shot."""
     results = []
     for genome in all_combinations():
         m = run_backtest(df15, df1h, params, settings, intrabar, allowed_dates, genome)["metrics"]
         results.append({"genome": genome, "net_profit_pips": m["net_profit_pips"],
                         "n_trades": m["n_trades"]})
-    return sorted(results, key=lambda r: r["net_profit_pips"], reverse=True)
+    floor = settings["gates"]["min_oos_trades"]
+    viable = sorted((r for r in results if r["n_trades"] >= floor),
+                    key=lambda r: r["net_profit_pips"], reverse=True)
+    sparse = sorted((r for r in results if r["n_trades"] < floor),
+                    key=lambda r: r["net_profit_pips"], reverse=True)
+    return viable + sparse
 
 
 def refine(screened: list[dict], df15, df1h, settings: dict, intrabar: dict,
@@ -126,8 +141,22 @@ def run_evolution() -> dict:
 
     cfg = settings["evolution"]
     optuna_cfg = settings["optuna"]
-    winner = refine(screened, train15, train1h, settings, intrabar, allowed,
-                    cfg["screen_top_k"], optuna_cfg["n_trials"], optuna_cfg["timeout_minutes"] * 60)
+    try:
+        winner = refine(screened, train15, train1h, settings, intrabar, allowed,
+                        cfg["screen_top_k"], optuna_cfg["n_trials"], optuna_cfg["timeout_minutes"] * 60)
+    except RuntimeError as exc:
+        # None of the top screen_top_k genomes reached min_oos_trades within the search
+        # budget for this regime's date-filtered training window — a legitimate outcome
+        # (a rare-signal genome can dominate the screen ranking on a tiny sample yet still
+        # be unviable), not a bug to crash on. Report it the same way a rejected candidate
+        # is reported, and write the record so evolution_cooldown_clear() sees this attempt
+        # and doesn't retry every cycle until the quarter-long cooldown elapses.
+        record = {"date": dt.date.today().isoformat(), "type": "evolution", "regime": regime,
+                  "window": trigger["window"], "screened": screened,
+                  "attempted": True, "accepted": False, "reason": str(exc)}
+        (ROOT / "results" / "runs" / f"evolution_{dt.date.today().isoformat()}.json").write_text(
+            json.dumps(record, indent=2) + "\n")
+        return record
 
     m15 = df15[(df15.index >= windows["oos_start"]) & (df15.index <= windows["oos_end"])]
     m1h = df1h[df1h.index <= windows["oos_end"]]
