@@ -1,0 +1,178 @@
+{
+  "date": "2026-08-07",
+  "type": "evolution",
+  "regime": "trending",
+  "window": 5,
+  "screened": [
+    {
+      "genome": {
+        "entry_signal": "volatility_squeeze_breakout",
+        "exit_style": "fixed_r_multiple"
+      },
+      "net_profit_pips": -67.3918,
+      "n_trades": 37
+    },
+    {
+      "genome": {
+        "entry_signal": "volatility_squeeze_breakout",
+        "exit_style": "time_stop"
+      },
+      "net_profit_pips": -67.3918,
+      "n_trades": 37
+    },
+    {
+      "genome": {
+        "entry_signal": "volatility_squeeze_breakout",
+        "exit_style": "atr_trail_half"
+      },
+      "net_profit_pips": -87.2498,
+      "n_trades": 37
+    },
+    {
+      "genome": {
+        "entry_signal": "ema_pullback",
+        "exit_style": "time_stop"
+      },
+      "net_profit_pips": -454.4795,
+      "n_trades": 212
+    },
+    {
+      "genome": {
+        "entry_signal": "ema_pullback",
+        "exit_style": "fixed_r_multiple"
+      },
+      "net_profit_pips": -493.9479,
+      "n_trades": 211
+    },
+    {
+      "genome": {
+        "entry_signal": "ema_pullback",
+        "exit_style": "atr_trail_half"
+      },
+      "net_profit_pips": -549.9339,
+      "n_trades": 207
+    },
+    {
+      "genome": {
+        "entry_signal": "mean_reversion",
+        "exit_style": "fixed_r_multiple"
+      },
+      "net_profit_pips": -865.0738,
+      "n_trades": 211
+    },
+    {
+      "genome": {
+        "entry_signal": "mean_reversion",
+        "exit_style": "time_stop"
+      },
+      "net_profit_pips": -895.1286,
+      "n_trades": 211
+    },
+    {
+      "genome": {
+        "entry_signal": "mean_reversion",
+        "exit_style": "atr_trail_half"
+      },
+      "net_profit_pips": -962.5076,
+      "n_trades": 211
+    },
+    {
+      "genome": {
+        "entry_signal": "breakout",
+        "exit_style": "atr_trail_half"
+      },
+      "net_profit_pips": -22.6967,
+      "n_trades": 5
+    },
+    {
+      "genome": {
+        "entry_signal": "breakout",
+        "exit_style": "fixed_r_multiple"
+      },
+      "net_profit_pips": -33.9978,
+      "n_trades": 5
+    },
+    {
+      "genome": {
+        "entry_signal": "breakout",
+        "exit_style": "time_stop"
+      },
+      "net_profit_pips": -33.9978,
+      "n_trades": 5
+    }
+  ],
+  "winner_genome": {
+    "entry_signal": "volatility_squeeze_breakout",
+    "exit_style": "fixed_r_multiple"
+  },
+  "winner_params": {
+    "rsi_buy_low": 42.08445657030646,
+    "rsi_buy_high": 72.54283535204878,
+    "rsi_sell_low": 35.915270463184854,
+    "rsi_sell_high": 64.46617084341513,
+    "atr_stop_mult": 2.6159687133406564,
+    "atr_target_mult": 2.9989122223114992,
+    "max_body_atr": 0.773380933748352,
+    "entry_buffer_pips": 0.20784995362168884
+  },
+  "winner_train_metrics": {
+    "n_trades": 68,
+    "net_profit_pips": 413.4466,
+    "expectancy_pips": 6.0801,
+    "win_rate": 0.7059,
+    "profit_factor": 2.442,
+    "max_drawdown": 0.0309
+  },
+  "candidate_oos": {
+    "n_trades": 36,
+    "net_profit_pips": -249.1957,
+    "expectancy_pips": -6.9221,
+    "win_rate": 0.3056,
+    "profit_factor": 0.3662,
+    "max_drawdown": 0.2671
+  },
+  "baseline_oos": {
+    "n_trades": 85,
+    "net_profit_pips": -290.9414,
+    "expectancy_pips": -3.4228,
+    "win_rate": 0.4118,
+    "profit_factor": 0.4468,
+    "max_drawdown": 0.2918
+  },
+  "champion_oos": {
+    "n_trades": 85,
+    "net_profit_pips": -290.9414,
+    "expectancy_pips": -3.4228,
+    "win_rate": 0.4118,
+    "profit_factor": 0.4468,
+    "max_drawdown": 0.2918
+  },
+  "accepted": false,
+  "gates": [
+    {
+      "name": "improvement",
+      "passed": false,
+      "detail": "candidate -249.1957 vs baseline -290.9414 (+20% required)"
+    },
+    {
+      "name": "trade_floor",
+      "passed": true,
+      "detail": "36 trades (floor 30)"
+    },
+    {
+      "name": "drawdown_ceiling",
+      "passed": false,
+      "detail": "26.71% (ceiling 12%)"
+    },
+    {
+      "name": "win_rate_floor",
+      "passed": false,
+      "detail": "30.56% (floor 40%)"
+    },
+    {
+      "name": "consistency",
+      "passed": false,
+      "detail": "test -249.1957 vs train 413.4466 pips"
+    }
+  ]
+}
