@@ -280,9 +280,17 @@ def reconcile() -> dict:
     settings = json.loads((ROOT / "config" / "settings.json").read_text())
     _, df1h = load_candles()
     key = os.environ.get("TWELVE_DATA_KEY", "")
-    r = requests.get("https://api.twelvedata.com/time_series", timeout=30, params={
-        "symbol": "EUR/USD", "interval": "1h", "outputsize": 500, "apikey": key})
-    values = r.json().get("values", [])
+    try:
+        r = requests.get("https://api.twelvedata.com/time_series", timeout=30, params={
+            "symbol": "EUR/USD", "interval": "1h", "outputsize": 500, "apikey": key})
+        values = r.json().get("values", [])
+    except (requests.RequestException, ValueError) as exc:
+        log = {"date": dt.date.today().isoformat(), "type": "reconciliation",
+               "overlap_bars": 0, "mean_abs_diff_pips": 0.0, "alert": False,
+               "error": f"Twelve Data unavailable: {exc}"}
+        out = ROOT / "results" / "runs" / f"reconcile_{dt.date.today().isoformat()}.json"
+        out.write_text(json.dumps(log, indent=2) + "\n")
+        return log
     # tz-aware UTC to match df1h's index (read from a +00:00-suffixed CSV) —
     # a bare pd.Timestamp(str) here is tz-naive and crashes pd.concat with
     # "Cannot join tz-naive with tz-aware DatetimeIndex". Real production bug.

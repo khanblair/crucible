@@ -304,7 +304,7 @@ def build_dashboard() -> None:
     decision = _latest("decision_*.json")
     regime_log = _latest("regime_*.json")
     changes = []
-    for path in sorted(RUNS.glob("decision_*.json")):
+    for path in sorted(RUNS.glob("decision_*.json"))[-180:]:
         rec = json.loads(path.read_text())
         changes.append({"date": rec["date"], "regime": rec["regime"],
                         "accepted": rec["accepted"],
@@ -337,7 +337,7 @@ def build_dashboard() -> None:
     regime_history = [{"date": r["date"], "regime": r["decision"]["regime"],
                        "swapped": r["swapped"]}
                       for r in (json.loads(p.read_text())
-                                for p in sorted(RUNS.glob("regime_*.json")))]
+                                for p in sorted(RUNS.glob("regime_*.json"))[-180:])]
     from src.backtest import load_settings
     settings = load_settings()
 

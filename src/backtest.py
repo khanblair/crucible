@@ -132,10 +132,11 @@ def run_backtest(df15: pd.DataFrame, df1h: pd.DataFrame, params: dict, settings:
 
 
 def phase0_passed() -> bool:
-    """Code-level backstop: the optimization and evolution loops must never
-    run against a strategy that hasn't proven it has an edge, regardless of
-    whether the workflows happen to be enabled. Manual GitHub Actions toggles
-    are the primary control; this is the defense-in-depth check underneath."""
+    """Informational check: whether the base strategy has proven an edge in
+    its unoptimized form. Phase 0 is no longer a hard gate — the optimization
+    and evolution loops run regardless and report the verdict transparently
+    (see CRUCIBLE.md Phase 0 section). Every candidate still must clear the
+    Evaluator's out-of-sample gates independently."""
     report = ROOT / "docs" / "phase0_report.md"
     if not report.exists():
         return False

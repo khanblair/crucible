@@ -56,12 +56,19 @@ def is_stale(regime: str, settings: dict, today: dt.date | None = None) -> bool:
 
 def validate_active() -> dict:
     """Every run begins here: the pointer must target an existing,
-    schema-valid parameter file. Half-written configuration is fatal."""
+    schema-valid parameter file whose genome reference also exists.
+    Half-written configuration is fatal."""
     active = json.loads((ROOT / "config" / "active.json").read_text())
     target = ROOT / active["params_file"]
     if not target.exists():
         raise FileNotFoundError(f"active.json points to missing file: {active['params_file']}")
-    validate_params(json.loads(target.read_text())["params"])
+    data = json.loads(target.read_text())
+    validate_params(data["params"])
+    genome = data.get("genome")
+    if genome and not (ROOT / "config" / "genomes" / f"{genome}.json").exists():
+        raise FileNotFoundError(
+            f"active.json targets regime with unknown genome '{genome}' "
+            f"(no config/genomes/{genome}.json)")
     return active
 
 

@@ -142,14 +142,14 @@ RANGE_LOOKBACK = 10        # bars — halved from 20 for the same reason: easier
 
 
 def volatility_squeeze_breakout(df15, df1h, params: dict, fixed: dict) -> list[dict]:
-    """Waits for a period of unusually tight volatility (ATR compressed into
-    the bottom 20% of its own trailing 24h range), then enters on a breakout
-    of the recent 20-bar range once that squeeze resolves. Deliberately
-    outside the RSI/EMA-trend toolkit every other entry uses — direction
-    comes purely from which side of the range price breaks, not from
-    momentum or trend agreement, so it is a genuinely different hypothesis
-    from ema_pullback/breakout/mean_reversion, all three of which lean on
-    the same RSI-confirmed, trend-filtered family that has shown no edge."""
+    """Waits for a period of below-average volatility (ATR at or below its
+    own trailing median over ~24h), then enters on a breakout of the recent
+    10-bar range once that squeeze resolves. Deliberately outside the
+    RSI/EMA-trend toolkit every other entry uses — direction comes purely
+    from which side of the range price breaks, not from momentum or trend
+    agreement, so it is a genuinely different hypothesis from
+    ema_pullback/breakout/mean_reversion, all three of which lean on the
+    same RSI-confirmed, trend-filtered family that has shown no edge."""
     a = atr_ind(df15, fixed["atr_period"])
     squeeze_threshold = a.rolling(SQUEEZE_LOOKBACK).quantile(SQUEEZE_PERCENTILE)
     was_squeezed = a.shift() <= squeeze_threshold.shift()
