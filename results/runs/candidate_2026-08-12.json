@@ -1,0 +1,29 @@
+{
+  "date": "2026-08-12",
+  "type": "candidate",
+  "regime": "low_volatility",
+  "genome": "baseline",
+  "params": {
+    "rsi_buy_low": 39.64746156405826,
+    "rsi_buy_high": 74.04416626718343,
+    "rsi_sell_low": 28.745371043007406,
+    "rsi_sell_high": 45.40656321060074,
+    "atr_stop_mult": 2.498959962678184,
+    "atr_target_mult": 1.9414763464019251,
+    "max_body_atr": 0.30020390174894135,
+    "entry_buffer_pips": 1.9897667910079706
+  },
+  "train_metrics": {
+    "n_trades": 31,
+    "net_profit_pips": -67.1207,
+    "expectancy_pips": -2.1652,
+    "win_rate": 0.5484,
+    "profit_factor": 0.6332,
+    "max_drawdown": 0.0963
+  },
+  "baseline_file": "config/regimes/low_volatility.json",
+  "oos_start": "2025-10-14 06:15:00+00:00",
+  "oos_end": "2026-02-11 06:15:00+00:00",
+  "holdout_start": "2026-02-12 06:15:00+00:00",
+  "evaluated": true
+}
