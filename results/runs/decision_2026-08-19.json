@@ -5,7 +5,7 @@
   "params": {
     "rsi_buy_low": 39.64746156405826,
     "rsi_buy_high": 74.04416626718343,
-    "rsi_sell_low": 28.745371043007406,
+    "rsi_sell_low": 28.74537104300741,
     "rsi_sell_high": 45.40656321060074,
     "atr_stop_mult": 2.498959962678184,
     "atr_target_mult": 1.9414763464019251,
