@@ -252,3 +252,13 @@
 {"kind": "resolution", "signal_time": "2026-08-14 15:15:00+00:00", "outcome": "closed", "pnl_pips": -16.6573, "resolved": "2026-08-19"}
 {"kind": "resolution", "signal_time": "2026-08-18 14:30:00+00:00", "outcome": "closed", "pnl_pips": -13.9057, "resolved": "2026-08-19"}
 {"kind": "resolution", "signal_time": "2026-08-18 15:45:00+00:00", "outcome": "closed", "pnl_pips": -14.8997, "resolved": "2026-08-19"}
+{"kind": "signal", "time": "2026-08-19 09:00:00+00:00", "direction": 1, "entry": 1.16025, "stop": 1.1595501950242741, "target": 1.1609498049757259, "params_file": "config/regimes/trending.json", "logged": "2026-08-20"}
+{"kind": "signal", "time": "2026-08-19 11:00:00+00:00", "direction": 1, "entry": 1.16105, "stop": 1.1603692349603192, "target": 1.1617307650396806, "params_file": "config/regimes/trending.json", "logged": "2026-08-20"}
+{"kind": "signal", "time": "2026-08-19 11:15:00+00:00", "direction": 1, "entry": 1.16086, "stop": 1.1602032181774393, "target": 1.1615167818225607, "params_file": "config/regimes/trending.json", "logged": "2026-08-20"}
+{"kind": "signal", "time": "2026-08-19 11:45:00+00:00", "direction": 1, "entry": 1.1607399999999999, "stop": 1.1600515503672817, "target": 1.161428449632718, "params_file": "config/regimes/trending.json", "logged": "2026-08-20"}
+{"kind": "resolution", "signal_time": "2026-08-18 15:15:00+00:00", "outcome": "closed", "pnl_pips": 7.5618, "resolved": "2026-08-20"}
+{"kind": "resolution", "signal_time": "2026-08-18 15:30:00+00:00", "outcome": "closed", "pnl_pips": 7.9775, "resolved": "2026-08-20"}
+{"kind": "resolution", "signal_time": "2026-08-19 09:00:00+00:00", "outcome": "closed", "pnl_pips": 3.749, "resolved": "2026-08-20"}
+{"kind": "resolution", "signal_time": "2026-08-19 11:00:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-08-20"}
+{"kind": "resolution", "signal_time": "2026-08-19 11:15:00+00:00", "outcome": "closed", "pnl_pips": 1.9839, "resolved": "2026-08-20"}
+{"kind": "resolution", "signal_time": "2026-08-19 11:45:00+00:00", "outcome": "closed", "pnl_pips": 2.1422, "resolved": "2026-08-20"}
