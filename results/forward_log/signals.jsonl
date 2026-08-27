@@ -274,3 +274,5 @@
 {"kind": "resolution", "signal_time": "2026-08-21 10:00:00+00:00", "outcome": "closed", "pnl_pips": -9.5905, "resolved": "2026-08-22"}
 {"kind": "resolution", "signal_time": "2026-08-21 11:00:00+00:00", "outcome": "closed", "pnl_pips": -9.7004, "resolved": "2026-08-22"}
 {"kind": "resolution", "signal_time": "2026-08-21 11:45:00+00:00", "outcome": "closed", "pnl_pips": -10.4011, "resolved": "2026-08-22"}
+{"kind": "signal", "time": "2026-08-26 07:45:00+00:00", "direction": 1, "entry": 1.1673489766791008, "stop": 1.1665527582108521, "target": 1.1679675697521232, "params_file": "config/regimes/low_volatility.json", "logged": "2026-08-27"}
+{"kind": "resolution", "signal_time": "2026-08-26 07:45:00+00:00", "outcome": "closed", "pnl_pips": -9.3622, "resolved": "2026-08-27"}

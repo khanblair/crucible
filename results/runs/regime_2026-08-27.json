@@ -1,0 +1,13 @@
+{
+  "date": "2026-08-27",
+  "type": "regime",
+  "decision": {
+    "regime": "low_volatility",
+    "rule": "3: low volatility in the absence of trend",
+    "adx": 12.07,
+    "atr": 0.000622,
+    "atr_percentile": 1.9
+  },
+  "stale": false,
+  "swapped": false
+}
