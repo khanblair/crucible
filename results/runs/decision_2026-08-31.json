@@ -23,47 +23,47 @@
     "entry_buffer_pips": 2.0
   },
   "candidate_oos": {
-    "n_trades": 60,
-    "net_profit_pips": -451.6786,
-    "expectancy_pips": -7.528,
-    "win_rate": 0.3333,
-    "profit_factor": 0.3862,
-    "max_drawdown": 0.4517
+    "n_trades": 59,
+    "net_profit_pips": -432.3583,
+    "expectancy_pips": -7.3281,
+    "win_rate": 0.339,
+    "profit_factor": 0.3967,
+    "max_drawdown": 0.4324
   },
   "baseline_oos": {
-    "n_trades": 86,
-    "net_profit_pips": -341.1561,
-    "expectancy_pips": -3.9669,
-    "win_rate": 0.3953,
-    "profit_factor": 0.3635,
-    "max_drawdown": 0.346
+    "n_trades": 85,
+    "net_profit_pips": -330.4049,
+    "expectancy_pips": -3.8871,
+    "win_rate": 0.4,
+    "profit_factor": 0.371,
+    "max_drawdown": 0.3376
   },
   "accepted": false,
   "gates": [
     {
       "name": "improvement",
       "passed": false,
-      "detail": "candidate -451.6786 vs baseline -341.1561 (+10% required)"
+      "detail": "candidate -432.3583 vs baseline -330.4049 (+10% required)"
     },
     {
       "name": "trade_floor",
       "passed": true,
-      "detail": "60 trades (floor 30)"
+      "detail": "59 trades (floor 30)"
     },
     {
       "name": "drawdown_ceiling",
       "passed": false,
-      "detail": "45.17% (ceiling 12%)"
+      "detail": "43.24% (ceiling 12%)"
     },
     {
       "name": "win_rate_floor",
       "passed": false,
-      "detail": "33.33% (floor 40%)"
+      "detail": "33.90% (floor 40%)"
     },
     {
       "name": "consistency",
       "passed": false,
-      "detail": "test -451.6786 vs train 873.359 pips"
+      "detail": "test -432.3583 vs train 873.359 pips"
     }
   ],
   "champion": {
