@@ -23,19 +23,19 @@
     "entry_buffer_pips": 2.0
   },
   "candidate_oos": {
-    "n_trades": 63,
-    "net_profit_pips": -199.6109,
-    "expectancy_pips": -3.1684,
-    "win_rate": 0.4603,
-    "profit_factor": 0.6902,
+    "n_trades": 65,
+    "net_profit_pips": -231.3186,
+    "expectancy_pips": -3.5587,
+    "win_rate": 0.4615,
+    "profit_factor": 0.6629,
     "max_drawdown": 0.2846
   },
   "baseline_oos": {
-    "n_trades": 86,
-    "net_profit_pips": -276.7247,
-    "expectancy_pips": -3.2177,
-    "win_rate": 0.407,
-    "profit_factor": 0.4762,
+    "n_trades": 88,
+    "net_profit_pips": -314.4152,
+    "expectancy_pips": -3.5729,
+    "win_rate": 0.3977,
+    "profit_factor": 0.4445,
     "max_drawdown": 0.3306
   },
   "accepted": false,
@@ -43,12 +43,12 @@
     {
       "name": "improvement",
       "passed": true,
-      "detail": "candidate -199.6109 vs baseline -276.7247 (+10% required)"
+      "detail": "candidate -231.3186 vs baseline -314.4152 (+10% required)"
     },
     {
       "name": "trade_floor",
       "passed": true,
-      "detail": "63 trades (floor 30)"
+      "detail": "65 trades (floor 30)"
     },
     {
       "name": "drawdown_ceiling",
@@ -58,25 +58,25 @@
     {
       "name": "win_rate_floor",
       "passed": true,
-      "detail": "46.03% (floor 40%)"
+      "detail": "46.15% (floor 40%)"
     },
     {
       "name": "consistency",
       "passed": false,
-      "detail": "test -199.6109 vs train 885.1343 pips"
+      "detail": "test -231.3186 vs train 885.1343 pips"
     }
   ],
   "champion": {
     "champion_zero": {
-      "net_profit_pips": -2456.9504,
-      "win_rate": 0.434,
-      "max_drawdown": 2.4162,
+      "net_profit_pips": -2447.5982,
+      "win_rate": 0.4353,
+      "max_drawdown": 2.4105,
       "n_trades": 788
     },
     "evolved": {
-      "net_profit_pips": -2456.9504,
-      "win_rate": 0.434,
-      "max_drawdown": 2.4162,
+      "net_profit_pips": -2447.5982,
+      "win_rate": 0.4353,
+      "max_drawdown": 2.4105,
       "n_trades": 788
     },
     "champion_zero_equity": [
@@ -868,7 +868,7 @@
       -1434.46,
       -1442.63,
       -1451.05,
-      -1456.95
+      -1447.6
     ],
     "evolved_equity": [
       1000.0,
@@ -1659,7 +1659,7 @@
       -1434.46,
       -1442.63,
       -1451.05,
-      -1456.95
+      -1447.6
     ],
     "evolved_leads": true,
     "warning_90d": false,
