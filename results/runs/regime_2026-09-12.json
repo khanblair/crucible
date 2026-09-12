@@ -4,9 +4,9 @@
   "decision": {
     "regime": "trending",
     "rule": "2: a quiet trend is still a trend",
-    "adx": 27.29,
-    "atr": 0.000804,
-    "atr_percentile": 20.6
+    "adx": 42.87,
+    "atr": 0.000745,
+    "atr_percentile": 13.4
   },
   "stale": false,
   "swapped": false
