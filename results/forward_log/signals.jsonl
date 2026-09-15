@@ -362,3 +362,9 @@
 {"kind": "resolution", "signal_time": "2026-09-09 08:15:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-09-11"}
 {"kind": "resolution", "signal_time": "2026-09-09 14:45:00+00:00", "outcome": "closed", "pnl_pips": -9.1305, "resolved": "2026-09-11"}
 {"kind": "resolution", "signal_time": "2026-09-10 07:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-09-11"}
+{"kind": "signal", "time": "2026-09-15 07:30:00+00:00", "direction": -1, "entry": 1.15344, "stop": 1.154019397842974, "target": 1.152860602157026, "params_file": "config/regimes/trending.json", "logged": "2026-09-15"}
+{"kind": "signal", "time": "2026-09-15 07:45:00+00:00", "direction": -1, "entry": 1.15352, "stop": 1.1540997979970473, "target": 1.1529402020029529, "params_file": "config/regimes/trending.json", "logged": "2026-09-15"}
+{"kind": "signal", "time": "2026-09-15 08:30:00+00:00", "direction": -1, "entry": 1.15335, "stop": 1.1539416749998226, "target": 1.1527583250001776, "params_file": "config/regimes/trending.json", "logged": "2026-09-15"}
+{"kind": "signal", "time": "2026-09-15 09:15:00+00:00", "direction": -1, "entry": 1.15307, "stop": 1.1536704409528462, "target": 1.1524695590471539, "params_file": "config/regimes/trending.json", "logged": "2026-09-15"}
+{"kind": "signal", "time": "2026-09-15 09:45:00+00:00", "direction": -1, "entry": 1.15314, "stop": 1.1537221659236276, "target": 1.1525578340763725, "params_file": "config/regimes/trending.json", "logged": "2026-09-15"}
+{"kind": "resolution", "signal_time": "2026-09-15 07:30:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-09-15"}
