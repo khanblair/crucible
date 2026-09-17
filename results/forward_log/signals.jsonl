@@ -376,3 +376,5 @@
 {"kind": "resolution", "signal_time": "2026-09-15 09:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-09-16"}
 {"kind": "resolution", "signal_time": "2026-09-15 09:30:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-09-16"}
 {"kind": "resolution", "signal_time": "2026-09-15 10:00:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-09-16"}
+{"kind": "signal", "time": "2026-09-17 08:45:00+00:00", "direction": -1, "entry": 1.14683, "stop": 1.1475599361285538, "target": 1.1461000638714463, "params_file": "config/regimes/trending.json", "logged": "2026-09-17"}
+{"kind": "resolution", "signal_time": "2026-09-17 08:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-09-17"}
