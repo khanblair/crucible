@@ -10,8 +10,8 @@
     "rsi_sell_high": 53.285182144943924,
     "atr_stop_mult": 1.0865488025554837,
     "atr_target_mult": 1.5778094550205282,
-    "max_body_atr": 0.34012229504428776,
-    "entry_buffer_pips": 0.8272660996802222
+    "max_body_atr": 0.3401222950442877,
+    "entry_buffer_pips": 0.8272660996802218
   },
   "train_metrics": {
     "n_trades": 37,
