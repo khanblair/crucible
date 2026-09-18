@@ -1,29 +1,29 @@
 {
   "date": "2026-09-18",
   "type": "candidate",
-  "regime": "trending",
+  "regime": "ranging",
   "genome": "baseline",
   "params": {
-    "rsi_buy_low": 53.033385428335905,
-    "rsi_buy_high": 59.511526541844425,
-    "rsi_sell_low": 27.669415525956172,
-    "rsi_sell_high": 57.86826179709303,
-    "atr_stop_mult": 2.887173941999038,
-    "atr_target_mult": 2.807300070514897,
-    "max_body_atr": 0.7703035543484543,
-    "entry_buffer_pips": 0.24364206230880314
+    "rsi_buy_low": 54.15990387779778,
+    "rsi_buy_high": 55.730539880547376,
+    "rsi_sell_low": 44.09229396900701,
+    "rsi_sell_high": 53.285182144943924,
+    "atr_stop_mult": 1.0865488025554837,
+    "atr_target_mult": 1.5778094550205282,
+    "max_body_atr": 0.34012229504428776,
+    "entry_buffer_pips": 0.8272660996802222
   },
   "train_metrics": {
-    "n_trades": 182,
-    "net_profit_pips": 816.6098,
-    "expectancy_pips": 4.4869,
-    "win_rate": 0.6703,
-    "profit_factor": 1.6336,
-    "max_drawdown": 0.1223
+    "n_trades": 37,
+    "net_profit_pips": -47.7359,
+    "expectancy_pips": -1.2902,
+    "win_rate": 0.4595,
+    "profit_factor": 0.7345,
+    "max_drawdown": 0.0774
   },
-  "baseline_file": "config/regimes/trending.json",
-  "oos_start": "2025-11-16 09:45:00+00:00",
-  "oos_end": "2026-03-16 09:45:00+00:00",
-  "holdout_start": "2026-03-17 09:45:00+00:00",
+  "baseline_file": "config/regimes/ranging.json",
+  "oos_start": "2025-11-17 09:15:00+00:00",
+  "oos_end": "2026-03-17 09:15:00+00:00",
+  "holdout_start": "2026-03-18 09:15:00+00:00",
   "evaluated": true
 }
