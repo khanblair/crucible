@@ -390,3 +390,9 @@
 {"kind": "resolution", "signal_time": "2026-09-14 09:30:00+00:00", "outcome": "closed", "pnl_pips": 5.8532, "resolved": "2026-09-19"}
 {"kind": "resolution", "signal_time": "2026-09-18 14:45:00+00:00", "outcome": "closed", "pnl_pips": -15.3531, "resolved": "2026-09-19"}
 {"kind": "resolution", "signal_time": "2026-09-18 15:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-09-19"}
+{"kind": "signal", "time": "2026-09-18 13:15:00+00:00", "direction": -1, "entry": 1.1459195652457626, "stop": 1.1474613311516304, "target": 1.1453512485269066, "params_file": "config/regimes/low_volatility.json", "logged": "2026-09-21"}
+{"kind": "signal", "time": "2026-09-21 07:30:00+00:00", "direction": -1, "entry": 1.1471195652457624, "stop": 1.1480001508264563, "target": 1.1467949689461638, "params_file": "config/regimes/low_volatility.json", "logged": "2026-09-21"}
+{"kind": "signal", "time": "2026-09-21 07:45:00+00:00", "direction": -1, "entry": 1.1471695652457625, "stop": 1.1480641739803554, "target": 1.1468397998133004, "params_file": "config/regimes/low_volatility.json", "logged": "2026-09-21"}
+{"kind": "resolution", "signal_time": "2026-09-18 13:15:00+00:00", "outcome": "closed", "pnl_pips": -16.8177, "resolved": "2026-09-21"}
+{"kind": "resolution", "signal_time": "2026-09-21 07:30:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-09-21"}
+{"kind": "resolution", "signal_time": "2026-09-21 07:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-09-21"}
