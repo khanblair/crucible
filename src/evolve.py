@@ -237,6 +237,23 @@ def _pr_body(record: dict, gid: str, settings: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _unique_branch(base: str) -> str:
+    """Append a numeric suffix if `base` is already taken locally or on the
+    remote — e.g. evolve.yml dispatched twice for the same date+genome (a
+    manual re-run after a failed prior attempt). Never resets or reuses an
+    existing branch: that could silently discard whatever commit it holds."""
+    listing = subprocess.run(["git", "branch", "--list", "-a", f"{base}*"],
+                             check=True, cwd=ROOT, capture_output=True, text=True).stdout
+    taken = {line.strip().lstrip("* ").replace("remotes/origin/", "")
+            for line in listing.splitlines() if line.strip()}
+    if base not in taken:
+        return base
+    i = 2
+    while f"{base}-{i}" in taken:
+        i += 1
+    return f"{base}-{i}"
+
+
 def open_pr(record: dict) -> str:
     """Commit the winning genome + updated regime pointers to a new branch and
     open a labeled pull request with full evidence. Requires `git` and `gh` on
@@ -246,7 +263,7 @@ def open_pr(record: dict) -> str:
 
     # Create and switch to the branch FIRST — if this fails, nothing has
     # written to the working tree yet, so main's checkout stays untouched.
-    branch = f"evolve/{record['date']}-{gid}"
+    branch = _unique_branch(f"evolve/{record['date']}-{gid}")
     subprocess.run(["git", "checkout", "-b", branch], check=True, cwd=ROOT)
 
     genome_path = ROOT / "config" / "genomes" / f"{gid}.json"
