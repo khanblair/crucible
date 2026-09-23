@@ -38,10 +38,12 @@ Without it, the engine uses worst-case ordering (stop assumed hit first).
 
 ## Operation
 
-- `monitor.yml` — weekdays 21:30 UTC: refresh data, classify regime (swap
+- `monitor.yml` — every 8h (00:00/08:00/16:00 EAT, no weekday filter — a quiet
+  weekend is a normal no-op): refresh data, classify regime (swap
   `active.json` if it changed), log paper-forward signals, report.
-- `optimize.yml` — Sundays 22:00 UTC: Optuna search on the training window,
-  Evaluator gate on rolling out-of-sample data, atomic config commit, report.
+- `optimize.yml` — every 8h, 30 min after monitor.yml: Optuna search on the
+  training window, Evaluator gate on rolling out-of-sample data, atomic
+  config commit, report; also checks the genome-evolution trigger.
 
 Everything the system decides is committed to this repository — the repo is
 the single source of truth and the complete audit trail.

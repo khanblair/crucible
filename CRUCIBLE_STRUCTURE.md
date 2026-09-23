@@ -39,8 +39,9 @@ crucible/
 │   ├── strategy.py                # Fixed filters only: RSI, candle quality, session, 1h trend
 │   │                              #   confirmation, and validate_params (human-edited only)
 │   ├── modules/
-│   │   ├── entries.py             # Entry-signal choices: ema_pullback, breakout, mean_reversion
-│   │   └── exits.py               # Exit-style choices: atr_trail_half, fixed_r_multiple
+│   │   ├── entries.py             # Entry-signal choices: ema_pullback, breakout, mean_reversion,
+│   │   │                          #   volatility_squeeze_breakout
+│   │   └── exits.py               # Exit-style choices: atr_trail_half, fixed_r_multiple, time_stop
 │   ├── genome.py                  # Module registry, genome load/validate, assemble() dispatch
 │   ├── backtest.py                # Harness: costs, slippage, swap, intrabar ordering, all metrics;
 │   │                              #   optional `genome` param dispatches entry/exit modules
