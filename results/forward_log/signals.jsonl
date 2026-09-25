@@ -418,3 +418,21 @@
 {"kind": "resolution", "signal_time": "2026-09-23 08:30:00+00:00", "outcome": "closed", "pnl_pips": 19.2345, "resolved": "2026-09-24"}
 {"kind": "resolution", "signal_time": "2026-09-23 08:45:00+00:00", "outcome": "closed", "pnl_pips": 19.141, "resolved": "2026-09-24"}
 {"kind": "resolution", "signal_time": "2026-09-24 07:00:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-09-24"}
+{"kind": "signal", "time": "2026-09-24 11:00:00+00:00", "direction": -1, "entry": 1.1369500000000001, "stop": 1.1378933267518632, "target": 1.136006673248137, "params_file": "config/regimes/trending.json", "logged": "2026-09-25"}
+{"kind": "signal", "time": "2026-09-24 11:15:00+00:00", "direction": -1, "entry": 1.13698, "stop": 1.1379180891267302, "target": 1.13604191087327, "params_file": "config/regimes/trending.json", "logged": "2026-09-25"}
+{"kind": "signal", "time": "2026-09-24 11:30:00+00:00", "direction": -1, "entry": 1.13673, "stop": 1.1376771541891064, "target": 1.1357828458108936, "params_file": "config/regimes/trending.json", "logged": "2026-09-25"}
+{"kind": "signal", "time": "2026-09-24 12:15:00+00:00", "direction": -1, "entry": 1.13638, "stop": 1.1373088493999515, "target": 1.1354511506000484, "params_file": "config/regimes/trending.json", "logged": "2026-09-25"}
+{"kind": "signal", "time": "2026-09-24 13:00:00+00:00", "direction": -1, "entry": 1.13674, "stop": 1.1377215623657775, "target": 1.1357584376342227, "params_file": "config/regimes/trending.json", "logged": "2026-09-25"}
+{"kind": "signal", "time": "2026-09-24 14:30:00+00:00", "direction": -1, "entry": 1.1369, "stop": 1.1380020666261768, "target": 1.1357979333738233, "params_file": "config/regimes/trending.json", "logged": "2026-09-25"}
+{"kind": "signal", "time": "2026-09-24 14:45:00+00:00", "direction": -1, "entry": 1.137, "stop": 1.1380779904385927, "target": 1.1359220095614073, "params_file": "config/regimes/trending.json", "logged": "2026-09-25"}
+{"kind": "signal", "time": "2026-09-24 15:30:00+00:00", "direction": -1, "entry": 1.13621, "stop": 1.1373003790064096, "target": 1.1351196209935903, "params_file": "config/regimes/trending.json", "logged": "2026-09-25"}
+{"kind": "signal", "time": "2026-09-24 15:45:00+00:00", "direction": -1, "entry": 1.13662, "stop": 1.1377053519345233, "target": 1.1355346480654767, "params_file": "config/regimes/trending.json", "logged": "2026-09-25"}
+{"kind": "resolution", "signal_time": "2026-09-24 11:00:00+00:00", "outcome": "closed", "pnl_pips": 3.4166, "resolved": "2026-09-25"}
+{"kind": "resolution", "signal_time": "2026-09-24 11:15:00+00:00", "outcome": "closed", "pnl_pips": 3.3904, "resolved": "2026-09-25"}
+{"kind": "resolution", "signal_time": "2026-09-24 11:30:00+00:00", "outcome": "closed", "pnl_pips": -10.8715, "resolved": "2026-09-25"}
+{"kind": "resolution", "signal_time": "2026-09-24 12:15:00+00:00", "outcome": "closed", "pnl_pips": -10.6885, "resolved": "2026-09-25"}
+{"kind": "resolution", "signal_time": "2026-09-24 13:00:00+00:00", "outcome": "closed", "pnl_pips": -11.2156, "resolved": "2026-09-25"}
+{"kind": "resolution", "signal_time": "2026-09-24 14:30:00+00:00", "outcome": "closed", "pnl_pips": -12.4207, "resolved": "2026-09-25"}
+{"kind": "resolution", "signal_time": "2026-09-24 14:45:00+00:00", "outcome": "closed", "pnl_pips": -12.1799, "resolved": "2026-09-25"}
+{"kind": "resolution", "signal_time": "2026-09-24 15:30:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-09-25"}
+{"kind": "resolution", "signal_time": "2026-09-24 15:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-09-25"}
