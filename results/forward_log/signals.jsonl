@@ -436,3 +436,5 @@
 {"kind": "resolution", "signal_time": "2026-09-24 14:45:00+00:00", "outcome": "closed", "pnl_pips": -12.1799, "resolved": "2026-09-25"}
 {"kind": "resolution", "signal_time": "2026-09-24 15:30:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-09-25"}
 {"kind": "resolution", "signal_time": "2026-09-24 15:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-09-25"}
+{"kind": "signal", "time": "2026-09-24 14:00:00+00:00", "direction": -1, "entry": 1.1366905446400923, "stop": 1.1381713126444488, "target": 1.135830130650198, "params_file": "config/regimes/ranging.json", "logged": "2026-09-26"}
+{"kind": "resolution", "signal_time": "2026-09-24 14:00:00+00:00", "outcome": "closed", "pnl_pips": -16.2077, "resolved": "2026-09-26"}
