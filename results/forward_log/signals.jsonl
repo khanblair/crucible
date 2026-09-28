@@ -438,3 +438,8 @@
 {"kind": "resolution", "signal_time": "2026-09-24 15:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-09-25"}
 {"kind": "signal", "time": "2026-09-24 14:00:00+00:00", "direction": -1, "entry": 1.1366905446400923, "stop": 1.1381713126444488, "target": 1.135830130650198, "params_file": "config/regimes/ranging.json", "logged": "2026-09-26"}
 {"kind": "resolution", "signal_time": "2026-09-24 14:00:00+00:00", "outcome": "closed", "pnl_pips": -16.2077, "resolved": "2026-09-26"}
+{"kind": "signal", "time": "2026-09-28 08:00:00+00:00", "direction": -1, "entry": 1.1376405446400923, "stop": 1.138599051342017, "target": 1.137083595426362, "params_file": "config/regimes/ranging.json", "logged": "2026-09-28"}
+{"kind": "signal", "time": "2026-09-28 08:15:00+00:00", "direction": -1, "entry": 1.1374405446400921, "stop": 1.1384539557612094, "target": 1.136851692704098, "params_file": "config/regimes/ranging.json", "logged": "2026-09-28"}
+{"kind": "signal", "time": "2026-09-28 11:30:00+00:00", "direction": -1, "entry": 1.1370505446400923, "stop": 1.1379050004510176, "target": 1.1365540551621296, "params_file": "config/regimes/ranging.json", "logged": "2026-09-28"}
+{"kind": "resolution", "signal_time": "2026-09-28 08:00:00+00:00", "outcome": "closed", "pnl_pips": 1.4847, "resolved": "2026-09-28"}
+{"kind": "resolution", "signal_time": "2026-09-28 08:15:00+00:00", "outcome": "closed", "pnl_pips": 1.647, "resolved": "2026-09-28"}
