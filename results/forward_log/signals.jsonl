@@ -447,3 +447,6 @@
 {"kind": "signal", "time": "2026-09-28 09:15:00+00:00", "direction": -1, "entry": 1.13733, "stop": 1.1380580569332448, "target": 1.136601943066755, "params_file": "config/regimes/trending.json", "logged": "2026-09-30"}
 {"kind": "signal", "time": "2026-09-28 09:30:00+00:00", "direction": -1, "entry": 1.1375, "stop": 1.1381953385808703, "target": 1.1368046614191296, "params_file": "config/regimes/trending.json", "logged": "2026-09-30"}
 {"kind": "resolution", "signal_time": "2026-09-28 09:30:00+00:00", "outcome": "closed", "pnl_pips": 2.4767, "resolved": "2026-09-30"}
+{"kind": "resolution", "signal_time": "2026-09-28 11:30:00+00:00", "outcome": "closed", "pnl_pips": 16.0352, "resolved": "2026-10-01"}
+{"kind": "resolution", "signal_time": "2026-09-28 08:45:00+00:00", "outcome": "closed", "pnl_pips": 19.2356, "resolved": "2026-10-01"}
+{"kind": "resolution", "signal_time": "2026-09-28 09:15:00+00:00", "outcome": "closed", "pnl_pips": 18.5903, "resolved": "2026-10-01"}
