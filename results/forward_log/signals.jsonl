@@ -466,3 +466,5 @@
 {"kind": "resolution", "signal_time": "2026-10-01 12:45:00+00:00", "outcome": "closed", "pnl_pips": -15.8835, "resolved": "2026-10-02"}
 {"kind": "resolution", "signal_time": "2026-10-01 13:30:00+00:00", "outcome": "closed", "pnl_pips": 30.1901, "resolved": "2026-10-02"}
 {"kind": "resolution", "signal_time": "2026-10-01 14:15:00+00:00", "outcome": "closed", "pnl_pips": 31.1338, "resolved": "2026-10-02"}
+{"kind": "signal", "time": "2026-10-02 11:30:00+00:00", "direction": -1, "entry": 1.12344, "stop": 1.1245025070760322, "target": 1.1223774929239678, "params_file": "config/champion_zero.json", "logged": "2026-10-03"}
+{"kind": "resolution", "signal_time": "2026-10-02 11:30:00+00:00", "outcome": "closed", "pnl_pips": 4.0125, "resolved": "2026-10-03"}
