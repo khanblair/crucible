@@ -1,6 +1,6 @@
 {
   "regime": "high_volatility",
-  "params_file": "config/regimes/high_volatility.json",
-  "fallback_champion_zero": false,
-  "updated": "2026-10-02"
+  "params_file": "config/champion_zero.json",
+  "fallback_champion_zero": true,
+  "updated": "2026-10-03"
 }
