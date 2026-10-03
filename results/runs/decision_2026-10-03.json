@@ -23,61 +23,61 @@
     "entry_buffer_pips": 2.0
   },
   "candidate_oos": {
-    "n_trades": 67,
-    "net_profit_pips": -217.7836,
-    "expectancy_pips": -3.2505,
-    "win_rate": 0.4776,
-    "profit_factor": 0.7133,
-    "max_drawdown": 0.258
+    "n_trades": 66,
+    "net_profit_pips": -242.4308,
+    "expectancy_pips": -3.6732,
+    "win_rate": 0.4697,
+    "profit_factor": 0.6857,
+    "max_drawdown": 0.2714
   },
   "baseline_oos": {
-    "n_trades": 90,
-    "net_profit_pips": -308.0968,
-    "expectancy_pips": -3.4233,
-    "win_rate": 0.4222,
-    "profit_factor": 0.4924,
-    "max_drawdown": 0.3081
+    "n_trades": 89,
+    "net_profit_pips": -306.7541,
+    "expectancy_pips": -3.4467,
+    "win_rate": 0.427,
+    "profit_factor": 0.4962,
+    "max_drawdown": 0.3131
   },
   "accepted": false,
   "gates": [
     {
       "name": "improvement",
       "passed": true,
-      "detail": "candidate -217.7836 vs baseline -308.0968 (+10% required)"
+      "detail": "candidate -242.4308 vs baseline -306.7541 (+10% required)"
     },
     {
       "name": "trade_floor",
       "passed": true,
-      "detail": "67 trades (floor 30)"
+      "detail": "66 trades (floor 30)"
     },
     {
       "name": "drawdown_ceiling",
       "passed": false,
-      "detail": "25.80% (ceiling 12%)"
+      "detail": "27.14% (ceiling 12%)"
     },
     {
       "name": "win_rate_floor",
       "passed": true,
-      "detail": "47.76% (floor 40%)"
+      "detail": "46.97% (floor 40%)"
     },
     {
       "name": "consistency",
       "passed": false,
-      "detail": "test -217.7836 vs train 920.8008 pips"
+      "detail": "test -242.4308 vs train 920.8008 pips"
     }
   ],
   "champion": {
     "champion_zero": {
-      "net_profit_pips": -2457.5937,
-      "win_rate": 0.4352,
+      "net_profit_pips": -2453.5812,
+      "win_rate": 0.4359,
       "max_drawdown": 2.4403,
-      "n_trades": 802
+      "n_trades": 803
     },
     "evolved": {
-      "net_profit_pips": -2457.5937,
-      "win_rate": 0.4352,
+      "net_profit_pips": -2453.5812,
+      "win_rate": 0.4359,
       "max_drawdown": 2.4403,
-      "n_trades": 802
+      "n_trades": 803
     },
     "champion_zero_equity": [
       1000.0,
@@ -882,7 +882,8 @@
       -1453.07,
       -1448.39,
       -1463.67,
-      -1457.59
+      -1457.59,
+      -1453.58
     ],
     "evolved_equity": [
       1000.0,
@@ -1687,7 +1688,8 @@
       -1453.07,
       -1448.39,
       -1463.67,
-      -1457.59
+      -1457.59,
+      -1453.58
     ],
     "evolved_leads": true,
     "warning_90d": false,
