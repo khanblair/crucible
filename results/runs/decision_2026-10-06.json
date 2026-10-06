@@ -3,14 +3,14 @@
   "type": "decision",
   "regime": "trending",
   "params": {
-    "rsi_buy_low": 46.07023328949221,
-    "rsi_buy_high": 70.7394064610684,
-    "rsi_sell_low": 29.197562383674786,
-    "rsi_sell_high": 54.417979117097055,
-    "atr_stop_mult": 2.93602187610424,
-    "atr_target_mult": 2.818583610236975,
-    "max_body_atr": 0.6861437989559556,
-    "entry_buffer_pips": 2.226418263690734
+    "rsi_buy_low": 51.767543777431534,
+    "rsi_buy_high": 62.63999647572809,
+    "rsi_sell_low": 29.802926202950026,
+    "rsi_sell_high": 61.43031183472981,
+    "atr_stop_mult": 2.95416987047674,
+    "atr_target_mult": 2.965334168071791,
+    "max_body_atr": 0.734326098909456,
+    "entry_buffer_pips": 0.8023613741578495
   },
   "baseline_params": {
     "rsi_buy_low": 45.0,
@@ -23,16 +23,16 @@
     "entry_buffer_pips": 2.0
   },
   "candidate_oos": {
-    "n_trades": 66,
-    "net_profit_pips": -230.7774,
-    "expectancy_pips": -3.4966,
-    "win_rate": 0.4697,
-    "profit_factor": 0.6962,
-    "max_drawdown": 0.2752
+    "n_trades": 63,
+    "net_profit_pips": -312.9414,
+    "expectancy_pips": -4.9673,
+    "win_rate": 0.4444,
+    "profit_factor": 0.6018,
+    "max_drawdown": 0.331
   },
   "baseline_oos": {
     "n_trades": 87,
-    "net_profit_pips": -300.9337,
+    "net_profit_pips": -300.9335,
     "expectancy_pips": -3.459,
     "win_rate": 0.4253,
     "profit_factor": 0.494,
@@ -42,28 +42,28 @@
   "gates": [
     {
       "name": "improvement",
-      "passed": true,
-      "detail": "candidate -230.7774 vs baseline -300.9337 (+10% required)"
+      "passed": false,
+      "detail": "candidate -312.9414 vs baseline -300.9335 (+10% required)"
     },
     {
       "name": "trade_floor",
       "passed": true,
-      "detail": "66 trades (floor 30)"
+      "detail": "63 trades (floor 30)"
     },
     {
       "name": "drawdown_ceiling",
       "passed": false,
-      "detail": "27.52% (ceiling 12%)"
+      "detail": "33.10% (ceiling 12%)"
     },
     {
       "name": "win_rate_floor",
       "passed": true,
-      "detail": "46.97% (floor 40%)"
+      "detail": "44.44% (floor 40%)"
     },
     {
       "name": "consistency",
       "passed": false,
-      "detail": "test -230.7774 vs train 920.8008 pips"
+      "detail": "test -312.9414 vs train 994.4906 pips"
     }
   ],
   "champion": {
