@@ -474,3 +474,12 @@
 {"kind": "resolution", "signal_time": "2026-10-05 07:00:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-05"}
 {"kind": "resolution", "signal_time": "2026-10-05 07:15:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-05"}
 {"kind": "resolution", "signal_time": "2026-10-05 07:45:00+00:00", "outcome": "closed", "pnl_pips": -15.9481, "resolved": "2026-10-05"}
+{"kind": "signal", "time": "2026-10-01 12:15:00+00:00", "direction": -1, "entry": 1.1286105446400923, "stop": 1.130561404804018, "target": 1.1274769792386041, "params_file": "config/regimes/ranging.json", "logged": "2026-10-08"}
+{"kind": "signal", "time": "2026-10-07 14:30:00+00:00", "direction": -1, "entry": 1.1179705446400923, "stop": 1.1197471101047858, "target": 1.1169382547909814, "params_file": "config/regimes/ranging.json", "logged": "2026-10-08"}
+{"kind": "signal", "time": "2026-10-07 15:00:00+00:00", "direction": -1, "entry": 1.1185105446400923, "stop": 1.1203448940048168, "target": 1.1174446789196557, "params_file": "config/regimes/ranging.json", "logged": "2026-10-08"}
+{"kind": "signal", "time": "2026-10-07 15:30:00+00:00", "direction": -1, "entry": 1.1180705446400923, "stop": 1.119844867232976, "target": 1.1170395580324595, "params_file": "config/regimes/ranging.json", "logged": "2026-10-08"}
+{"kind": "signal", "time": "2026-10-07 15:45:00+00:00", "direction": -1, "entry": 1.1178405446400923, "stop": 1.1195708433348373, "target": 1.1168351385269981, "params_file": "config/regimes/ranging.json", "logged": "2026-10-08"}
+{"kind": "resolution", "signal_time": "2026-10-01 12:15:00+00:00", "outcome": "closed", "pnl_pips": 4.3678, "resolved": "2026-10-08"}
+{"kind": "resolution", "signal_time": "2026-10-07 14:30:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-08"}
+{"kind": "resolution", "signal_time": "2026-10-07 15:30:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-08"}
+{"kind": "resolution", "signal_time": "2026-10-07 15:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-08"}
