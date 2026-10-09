@@ -483,3 +483,24 @@
 {"kind": "resolution", "signal_time": "2026-10-07 14:30:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-08"}
 {"kind": "resolution", "signal_time": "2026-10-07 15:30:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-08"}
 {"kind": "resolution", "signal_time": "2026-10-07 15:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-08"}
+{"kind": "signal", "time": "2026-10-07 13:15:00+00:00", "direction": -1, "entry": 1.11728, "stop": 1.1185667690595487, "target": 1.1159932309404514, "params_file": "config/champion_zero.json", "logged": "2026-10-09"}
+{"kind": "signal", "time": "2026-10-07 13:30:00+00:00", "direction": -1, "entry": 1.11735, "stop": 1.1186316426981524, "target": 1.1160683573018477, "params_file": "config/champion_zero.json", "logged": "2026-10-09"}
+{"kind": "signal", "time": "2026-10-08 07:30:00+00:00", "direction": -1, "entry": 1.11871, "stop": 1.1195880711946413, "target": 1.1178319288053589, "params_file": "config/champion_zero.json", "logged": "2026-10-09"}
+{"kind": "signal", "time": "2026-10-08 07:45:00+00:00", "direction": -1, "entry": 1.11914, "stop": 1.1199982089664526, "target": 1.1182817910335474, "params_file": "config/champion_zero.json", "logged": "2026-10-09"}
+{"kind": "signal", "time": "2026-10-08 08:15:00+00:00", "direction": -1, "entry": 1.11925, "stop": 1.1201135832414821, "target": 1.118386416758518, "params_file": "config/champion_zero.json", "logged": "2026-10-09"}
+{"kind": "signal", "time": "2026-10-08 10:45:00+00:00", "direction": -1, "entry": 1.11794, "stop": 1.1189064205060553, "target": 1.1169735794939446, "params_file": "config/champion_zero.json", "logged": "2026-10-09"}
+{"kind": "signal", "time": "2026-10-08 11:30:00+00:00", "direction": -1, "entry": 1.11698, "stop": 1.1180045775698992, "target": 1.115955422430101, "params_file": "config/champion_zero.json", "logged": "2026-10-09"}
+{"kind": "signal", "time": "2026-10-08 11:45:00+00:00", "direction": -1, "entry": 1.11748, "stop": 1.118477464886335, "target": 1.1164825351136651, "params_file": "config/champion_zero.json", "logged": "2026-10-09"}
+{"kind": "signal", "time": "2026-10-08 12:45:00+00:00", "direction": -1, "entry": 1.1179000000000001, "stop": 1.1190604663322214, "target": 1.1167395336677788, "params_file": "config/champion_zero.json", "logged": "2026-10-09"}
+{"kind": "signal", "time": "2026-10-08 13:15:00+00:00", "direction": -1, "entry": 1.11833, "stop": 1.1195392286231909, "target": 1.1171207713768092, "params_file": "config/champion_zero.json", "logged": "2026-10-09"}
+{"kind": "resolution", "signal_time": "2026-10-07 15:00:00+00:00", "outcome": "closed", "pnl_pips": -19.1435, "resolved": "2026-10-09"}
+{"kind": "resolution", "signal_time": "2026-10-07 13:15:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-09"}
+{"kind": "resolution", "signal_time": "2026-10-07 13:30:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-09"}
+{"kind": "resolution", "signal_time": "2026-10-08 07:30:00+00:00", "outcome": "closed", "pnl_pips": -10.1807, "resolved": "2026-10-09"}
+{"kind": "resolution", "signal_time": "2026-10-08 07:45:00+00:00", "outcome": "closed", "pnl_pips": -9.9821, "resolved": "2026-10-09"}
+{"kind": "resolution", "signal_time": "2026-10-08 08:15:00+00:00", "outcome": "closed", "pnl_pips": 3.0179, "resolved": "2026-10-09"}
+{"kind": "resolution", "signal_time": "2026-10-08 10:45:00+00:00", "outcome": "closed", "pnl_pips": -11.0642, "resolved": "2026-10-09"}
+{"kind": "resolution", "signal_time": "2026-10-08 11:30:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-09"}
+{"kind": "resolution", "signal_time": "2026-10-08 11:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-09"}
+{"kind": "resolution", "signal_time": "2026-10-08 12:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-09"}
+{"kind": "resolution", "signal_time": "2026-10-08 13:15:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-09"}
