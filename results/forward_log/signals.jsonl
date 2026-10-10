@@ -504,3 +504,13 @@
 {"kind": "resolution", "signal_time": "2026-10-08 11:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-09"}
 {"kind": "resolution", "signal_time": "2026-10-08 12:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-09"}
 {"kind": "resolution", "signal_time": "2026-10-08 13:15:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-09"}
+{"kind": "signal", "time": "2026-10-09 11:30:00+00:00", "direction": -1, "entry": 1.12089, "stop": 1.121700845910119, "target": 1.120079154089881, "params_file": "config/champion_zero.json", "logged": "2026-10-10"}
+{"kind": "signal", "time": "2026-10-09 11:45:00+00:00", "direction": -1, "entry": 1.12045, "stop": 1.1212789997736818, "target": 1.119621000226318, "params_file": "config/champion_zero.json", "logged": "2026-10-10"}
+{"kind": "signal", "time": "2026-10-09 14:30:00+00:00", "direction": -1, "entry": 1.11942, "stop": 1.1203125595633059, "target": 1.1185274404366943, "params_file": "config/champion_zero.json", "logged": "2026-10-10"}
+{"kind": "signal", "time": "2026-10-09 15:00:00+00:00", "direction": -1, "entry": 1.11909, "stop": 1.1199789926846873, "target": 1.1182010073153126, "params_file": "config/champion_zero.json", "logged": "2026-10-10"}
+{"kind": "signal", "time": "2026-10-09 15:15:00+00:00", "direction": -1, "entry": 1.11926, "stop": 1.1201304932072096, "target": 1.1183895067927903, "params_file": "config/champion_zero.json", "logged": "2026-10-10"}
+{"kind": "resolution", "signal_time": "2026-10-09 11:30:00+00:00", "outcome": "closed", "pnl_pips": 8.4542, "resolved": "2026-10-10"}
+{"kind": "resolution", "signal_time": "2026-10-09 11:45:00+00:00", "outcome": "closed", "pnl_pips": 6.345, "resolved": "2026-10-10"}
+{"kind": "resolution", "signal_time": "2026-10-09 14:30:00+00:00", "outcome": "closed", "pnl_pips": -10.3256, "resolved": "2026-10-10"}
+{"kind": "resolution", "signal_time": "2026-10-09 15:00:00+00:00", "outcome": "closed", "pnl_pips": -10.2899, "resolved": "2026-10-10"}
+{"kind": "resolution", "signal_time": "2026-10-09 15:15:00+00:00", "outcome": "closed", "pnl_pips": -10.1049, "resolved": "2026-10-10"}
