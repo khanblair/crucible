@@ -22,8 +22,8 @@
     "max_drawdown": 0.0638
   },
   "baseline_file": "config/regimes/trending.json",
-  "oos_start": "2025-12-14 00:00:00+00:00",
-  "oos_end": "2026-04-13 00:00:00+00:00",
-  "holdout_start": "2026-04-14 00:00:00+00:00",
+  "oos_start": "2025-12-15 09:30:00+00:00",
+  "oos_end": "2026-04-14 09:30:00+00:00",
+  "holdout_start": "2026-04-15 09:30:00+00:00",
   "evaluated": true
 }
