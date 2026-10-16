@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-16",
+  "type": "regime",
+  "decision": {
+    "regime": "high_volatility",
+    "rule": "1: high volatility outranks everything",
+    "adx": 20.47,
+    "atr": 0.001307,
+    "atr_percentile": 86.9
+  },
+  "stale": true,
+  "swapped": false
+}

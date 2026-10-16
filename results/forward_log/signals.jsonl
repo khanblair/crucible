@@ -514,3 +514,7 @@
 {"kind": "resolution", "signal_time": "2026-10-09 14:30:00+00:00", "outcome": "closed", "pnl_pips": -10.3256, "resolved": "2026-10-10"}
 {"kind": "resolution", "signal_time": "2026-10-09 15:00:00+00:00", "outcome": "closed", "pnl_pips": -10.2899, "resolved": "2026-10-10"}
 {"kind": "resolution", "signal_time": "2026-10-09 15:15:00+00:00", "outcome": "closed", "pnl_pips": -10.1049, "resolved": "2026-10-10"}
+{"kind": "signal", "time": "2026-10-15 15:30:00+00:00", "direction": -1, "entry": 1.11991, "stop": 1.121368549453608, "target": 1.1184514505463918, "params_file": "config/champion_zero.json", "logged": "2026-10-16"}
+{"kind": "signal", "time": "2026-10-15 15:45:00+00:00", "direction": -1, "entry": 1.12006, "stop": 1.1214711530640646, "target": 1.1186488469359355, "params_file": "config/champion_zero.json", "logged": "2026-10-16"}
+{"kind": "resolution", "signal_time": "2026-10-15 15:30:00+00:00", "outcome": "closed", "pnl_pips": -15.9855, "resolved": "2026-10-16"}
+{"kind": "resolution", "signal_time": "2026-10-15 15:45:00+00:00", "outcome": "closed", "pnl_pips": -15.5115, "resolved": "2026-10-16"}
