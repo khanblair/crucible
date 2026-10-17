@@ -3,14 +3,14 @@
   "type": "decision",
   "regime": "trending",
   "params": {
-    "rsi_buy_low": 52.092848384146,
-    "rsi_buy_high": 71.80348831090386,
-    "rsi_sell_low": 25.742813580410704,
-    "rsi_sell_high": 55.1224773677921,
-    "atr_stop_mult": 2.7372637107886018,
-    "atr_target_mult": 2.998854470317065,
-    "max_body_atr": 0.7819410766539089,
-    "entry_buffer_pips": 0.20334215963723834
+    "rsi_buy_low": 52.398603928536204,
+    "rsi_buy_high": 73.09970952653916,
+    "rsi_sell_low": 30.6107477255924,
+    "rsi_sell_high": 61.209275802289746,
+    "atr_stop_mult": 2.8978791004862896,
+    "atr_target_mult": 2.947771390904693,
+    "max_body_atr": 0.7713131409598715,
+    "entry_buffer_pips": 1.0655444160856362
   },
   "baseline_params": {
     "rsi_buy_low": 45.0,
@@ -23,12 +23,12 @@
     "entry_buffer_pips": 2.0
   },
   "candidate_oos": {
-    "n_trades": 70,
-    "net_profit_pips": -191.6963,
-    "expectancy_pips": -2.7385,
-    "win_rate": 0.4571,
-    "profit_factor": 0.7631,
-    "max_drawdown": 0.27
+    "n_trades": 65,
+    "net_profit_pips": -177.73,
+    "expectancy_pips": -2.7343,
+    "win_rate": 0.4769,
+    "profit_factor": 0.7657,
+    "max_drawdown": 0.2522
   },
   "baseline_oos": {
     "n_trades": 88,
@@ -43,27 +43,27 @@
     {
       "name": "improvement",
       "passed": true,
-      "detail": "candidate -191.6963 vs baseline -348.0236 (+10% required)"
+      "detail": "candidate -177.73 vs baseline -348.0236 (+10% required)"
     },
     {
       "name": "trade_floor",
       "passed": true,
-      "detail": "70 trades (floor 30)"
+      "detail": "65 trades (floor 30)"
     },
     {
       "name": "drawdown_ceiling",
       "passed": false,
-      "detail": "27.00% (ceiling 12%)"
+      "detail": "25.22% (ceiling 12%)"
     },
     {
       "name": "win_rate_floor",
       "passed": true,
-      "detail": "45.71% (floor 40%)"
+      "detail": "47.69% (floor 40%)"
     },
     {
       "name": "consistency",
       "passed": false,
-      "detail": "test -191.6963 vs train 1076.7999 pips"
+      "detail": "test -177.73 vs train 1062.3332 pips"
     }
   ],
   "champion": {
