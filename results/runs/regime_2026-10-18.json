@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-18",
+  "type": "regime",
+  "decision": {
+    "regime": "ranging",
+    "rule": "3: neutral/no-trend with mid-range volatility",
+    "adx": 16.48,
+    "atr": 0.001058,
+    "atr_percentile": 60.9
+  },
+  "stale": true,
+  "swapped": false
+}
