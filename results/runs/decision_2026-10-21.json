@@ -68,15 +68,15 @@
   ],
   "champion": {
     "champion_zero": {
-      "net_profit_pips": -2545.696,
+      "net_profit_pips": -2549.3155,
       "win_rate": 0.4323,
-      "max_drawdown": 2.5025,
+      "max_drawdown": 2.506,
       "n_trades": 812
     },
     "evolved": {
-      "net_profit_pips": -2545.696,
+      "net_profit_pips": -2549.3155,
       "win_rate": 0.4323,
-      "max_drawdown": 2.5025,
+      "max_drawdown": 2.506,
       "n_trades": 812
     },
     "champion_zero_equity": [
@@ -892,7 +892,7 @@
       -1508.11,
       -1524.09,
       -1537.1,
-      -1545.7
+      -1549.32
     ],
     "evolved_equity": [
       1000.0,
@@ -1707,7 +1707,7 @@
       -1508.11,
       -1524.09,
       -1537.1,
-      -1545.7
+      -1549.32
     ],
     "evolved_leads": true,
     "warning_90d": false,
