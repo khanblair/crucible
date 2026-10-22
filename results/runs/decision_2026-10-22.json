@@ -24,18 +24,18 @@
   },
   "candidate_oos": {
     "n_trades": 66,
-    "net_profit_pips": -155.3183,
-    "expectancy_pips": -2.3533,
-    "win_rate": 0.4848,
-    "profit_factor": 0.7952,
-    "max_drawdown": 0.2522
+    "net_profit_pips": -184.1398,
+    "expectancy_pips": -2.79,
+    "win_rate": 0.4697,
+    "profit_factor": 0.7629,
+    "max_drawdown": 0.2549
   },
   "baseline_oos": {
-    "n_trades": 87,
-    "net_profit_pips": -326.7787,
-    "expectancy_pips": -3.7561,
-    "win_rate": 0.4138,
-    "profit_factor": 0.4837,
+    "n_trades": 88,
+    "net_profit_pips": -319.854,
+    "expectancy_pips": -3.6347,
+    "win_rate": 0.4205,
+    "profit_factor": 0.4947,
     "max_drawdown": 0.3511
   },
   "accepted": false,
@@ -43,7 +43,7 @@
     {
       "name": "improvement",
       "passed": true,
-      "detail": "candidate -155.3183 vs baseline -326.7787 (+10% required)"
+      "detail": "candidate -184.1398 vs baseline -319.854 (+10% required)"
     },
     {
       "name": "trade_floor",
@@ -53,17 +53,17 @@
     {
       "name": "drawdown_ceiling",
       "passed": false,
-      "detail": "25.22% (ceiling 12%)"
+      "detail": "25.49% (ceiling 12%)"
     },
     {
       "name": "win_rate_floor",
       "passed": true,
-      "detail": "48.48% (floor 40%)"
+      "detail": "46.97% (floor 40%)"
     },
     {
       "name": "consistency",
       "passed": false,
-      "detail": "test -155.3183 vs train 1062.3332 pips"
+      "detail": "test -184.1398 vs train 1062.3332 pips"
     }
   ],
   "champion": {
