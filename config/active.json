@@ -1,6 +1,6 @@
 {
-  "regime": "ranging",
+  "regime": "trending",
   "params_file": "config/champion_zero.json",
   "fallback_champion_zero": true,
-  "updated": "2026-10-21"
+  "updated": "2026-10-23"
 }
