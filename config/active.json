@@ -1,6 +1,6 @@
 {
-  "regime": "ranging",
+  "regime": "high_volatility",
   "params_file": "config/champion_zero.json",
   "fallback_champion_zero": true,
-  "updated": "2026-10-24"
+  "updated": "2026-10-28"
 }
