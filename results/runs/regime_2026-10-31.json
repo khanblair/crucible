@@ -4,9 +4,9 @@
   "decision": {
     "regime": "high_volatility",
     "rule": "1: high volatility outranks everything",
-    "adx": 26.82,
-    "atr": 0.001563,
-    "atr_percentile": 95.8
+    "adx": 18.85,
+    "atr": 0.001272,
+    "atr_percentile": 83.4
   },
   "stale": true,
   "swapped": false
