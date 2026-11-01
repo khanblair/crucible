@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-01",
+  "type": "refresh",
+  "previous_last_date": "2026-10-30",
+  "new_last_date": "2026-10-30",
+  "advanced": false,
+  "stale_trading_days": 0,
+  "rejected_days": [],
+  "unreachable_days": [
+    "2026-10-30"
+  ],
+  "fallback_used": false,
+  "fallback_dates": []
+}
