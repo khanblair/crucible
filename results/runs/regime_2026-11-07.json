@@ -2,12 +2,12 @@
   "date": "2026-11-07",
   "type": "regime",
   "decision": {
-    "regime": "high_volatility",
-    "rule": "1: high volatility outranks everything",
-    "adx": 14.53,
-    "atr": 0.001274,
-    "atr_percentile": 82.6
+    "regime": "trending",
+    "rule": "2: a quiet trend is still a trend",
+    "adx": 35.93,
+    "atr": 0.001032,
+    "atr_percentile": 54.7
   },
   "stale": true,
-  "swapped": false
+  "swapped": true
 }

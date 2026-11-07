@@ -572,3 +572,5 @@
 {"kind": "signal", "time": "2026-10-30 15:45:00+00:00", "direction": -1, "entry": 1.11516, "stop": 1.1165969031850675, "target": 1.1137230968149323, "params_file": "config/champion_zero.json", "logged": "2026-10-31"}
 {"kind": "resolution", "signal_time": "2026-10-30 15:30:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-31"}
 {"kind": "resolution", "signal_time": "2026-10-30 15:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-10-31"}
+{"kind": "signal", "time": "2026-11-06 15:15:00+00:00", "direction": -1, "entry": 1.1151900000000001, "stop": 1.1164945321441224, "target": 1.1138854678558778, "params_file": "config/champion_zero.json", "logged": "2026-11-07"}
+{"kind": "resolution", "signal_time": "2026-11-06 15:15:00+00:00", "outcome": "closed", "pnl_pips": 11.1227, "resolved": "2026-11-07"}
