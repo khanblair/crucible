@@ -652,3 +652,7 @@
 {"kind": "resolution", "signal_time": "2026-11-25 09:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-11-25"}
 {"kind": "resolution", "signal_time": "2026-11-25 11:30:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-11-25"}
 {"kind": "resolution", "signal_time": "2026-11-25 11:45:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-11-25"}
+{"kind": "signal", "time": "2026-11-25 11:15:00+00:00", "direction": -1, "entry": 1.09363, "stop": 1.0946188373200867, "target": 1.0926411626799135, "params_file": "config/champion_zero.json", "logged": "2026-11-26"}
+{"kind": "signal", "time": "2026-11-25 15:30:00+00:00", "direction": -1, "entry": 1.09357, "stop": 1.0948343615791283, "target": 1.0923056384208716, "params_file": "config/champion_zero.json", "logged": "2026-11-26"}
+{"kind": "resolution", "signal_time": "2026-11-25 11:15:00+00:00", "outcome": "closed", "pnl_pips": -11.2884, "resolved": "2026-11-26"}
+{"kind": "resolution", "signal_time": "2026-11-25 15:30:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-11-26"}
