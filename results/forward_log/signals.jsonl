@@ -656,3 +656,19 @@
 {"kind": "signal", "time": "2026-11-25 15:30:00+00:00", "direction": -1, "entry": 1.09357, "stop": 1.0948343615791283, "target": 1.0923056384208716, "params_file": "config/champion_zero.json", "logged": "2026-11-26"}
 {"kind": "resolution", "signal_time": "2026-11-25 11:15:00+00:00", "outcome": "closed", "pnl_pips": -11.2884, "resolved": "2026-11-26"}
 {"kind": "resolution", "signal_time": "2026-11-25 15:30:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-11-26"}
+{"kind": "signal", "time": "2026-11-27 09:45:00+00:00", "direction": -1, "entry": 1.0958, "stop": 1.096682140571126, "target": 1.0949178594288742, "params_file": "config/champion_zero.json", "logged": "2026-11-28"}
+{"kind": "signal", "time": "2026-11-27 10:45:00+00:00", "direction": -1, "entry": 1.09596, "stop": 1.0967876119807354, "target": 1.0951323880192647, "params_file": "config/champion_zero.json", "logged": "2026-11-28"}
+{"kind": "signal", "time": "2026-11-27 11:00:00+00:00", "direction": -1, "entry": 1.096, "stop": 1.0968092111249685, "target": 1.0951907888750316, "params_file": "config/champion_zero.json", "logged": "2026-11-28"}
+{"kind": "signal", "time": "2026-11-27 11:15:00+00:00", "direction": -1, "entry": 1.09582, "stop": 1.0965981960446136, "target": 1.0950418039553864, "params_file": "config/champion_zero.json", "logged": "2026-11-28"}
+{"kind": "signal", "time": "2026-11-27 11:30:00+00:00", "direction": -1, "entry": 1.09572, "stop": 1.0964865391842842, "target": 1.0949534608157159, "params_file": "config/champion_zero.json", "logged": "2026-11-28"}
+{"kind": "signal", "time": "2026-11-27 12:15:00+00:00", "direction": -1, "entry": 1.09608, "stop": 1.0968991751413528, "target": 1.095260824858647, "params_file": "config/champion_zero.json", "logged": "2026-11-28"}
+{"kind": "signal", "time": "2026-11-27 12:30:00+00:00", "direction": -1, "entry": 1.09594, "stop": 1.0967617340598275, "target": 1.0951182659401724, "params_file": "config/champion_zero.json", "logged": "2026-11-28"}
+{"kind": "signal", "time": "2026-11-27 12:45:00+00:00", "direction": -1, "entry": 1.09588, "stop": 1.0967169673412684, "target": 1.0950430326587315, "params_file": "config/champion_zero.json", "logged": "2026-11-28"}
+{"kind": "resolution", "signal_time": "2026-11-27 09:45:00+00:00", "outcome": "closed", "pnl_pips": -10.2214, "resolved": "2026-11-28"}
+{"kind": "resolution", "signal_time": "2026-11-27 10:45:00+00:00", "outcome": "closed", "pnl_pips": -9.6761, "resolved": "2026-11-28"}
+{"kind": "resolution", "signal_time": "2026-11-27 11:00:00+00:00", "outcome": "closed", "pnl_pips": -9.4921, "resolved": "2026-11-28"}
+{"kind": "resolution", "signal_time": "2026-11-27 11:15:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-11-28"}
+{"kind": "resolution", "signal_time": "2026-11-27 11:30:00+00:00", "outcome": "unfilled", "pnl_pips": 0.0, "resolved": "2026-11-28"}
+{"kind": "resolution", "signal_time": "2026-11-27 12:15:00+00:00", "outcome": "closed", "pnl_pips": 2.7959, "resolved": "2026-11-28"}
+{"kind": "resolution", "signal_time": "2026-11-27 12:30:00+00:00", "outcome": "closed", "pnl_pips": 2.8087, "resolved": "2026-11-28"}
+{"kind": "resolution", "signal_time": "2026-11-27 12:45:00+00:00", "outcome": "closed", "pnl_pips": 2.8848, "resolved": "2026-11-28"}
